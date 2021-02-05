@@ -49,13 +49,23 @@ while(-Not($lastRelease -eq $currentRelease)) {
     if($approval.Count -gt 1) {
         $approval
         $pendingApprovals = "Pending releases for approval: "
+        $pendingReleaseIds = @()
         foreach ($pendingApproval in $approval) {
-            $pendingApprovals += $pendingApproval.release.name + " "
+            if($pendingReleaseIds.Contains($pendingApproval.release.id))
+            {
+                $pendingApprovals += $pendingApproval.release.name + " "
+            }
+            else {
+                $pendingReleaseIds += $pendingApproval.release.id
+            }
         }
 
-        $multipleApprovalsError = "Error: More than 1 approval ($approval.Count) at a time was unexpected $pendingApprovals"
-        log $multipleApprovalsError
-        throw $multipleApprovalsError
+        if($pendingReleaseIds.Count -gt 1)
+        {
+            $multipleApprovalsError = "Error: More than 1 approval ($approval.Count) at a time was unexpected $pendingApprovals"
+            log $multipleApprovalsError
+            throw $multipleApprovalsError
+        }
     }
     elseif($approval.Count -eq 0) {
         # If there are no pending approvals, exit as there are no new changes to release.
