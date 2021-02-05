@@ -47,6 +47,7 @@ while(-Not($lastRelease -eq $currentRelease)) {
 
     # Validate that only one release is pending approval - any others should be approved, rejected or queued.
     if($approval.Count -gt 1) {
+        $approval
         $pendingApprovals = "Pending releases for approval: "
         foreach ($pendingApproval in $approval) {
             $pendingApprovals += $pendingApproval.release.name + " "
