@@ -52,7 +52,7 @@ while(-Not($lastRelease -eq $currentRelease)) {
             $pendingApprovals += $pendingApproval.release.name + " "
         }
 
-        $multipleApprovalsError = "Error: More than 1 approval at a time was unexpected $pendingApprovals"
+        $multipleApprovalsError = "Error: More than 1 approval ($approval.Count) at a time was unexpected $pendingApprovals"
         log $multipleApprovalsError
         throw $multipleApprovalsError
     }
