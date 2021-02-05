@@ -84,10 +84,10 @@ while(-Not($lastRelease -eq $currentRelease)) {
     }
     else {
         # Only the latest release will be approved.
-        $updateStatusObj = @{
-            "status" = "approved"
-            "comment" = "Approved by automation"
-        } | ConvertTo-Json
+        #$updateStatusObj = @{
+        #    "status" = "approved"
+        #   "comment" = "Approved by automation"
+        #} | ConvertTo-Json
 
         "Accepting $($($($approval[0]).release).name)"
         log "Accepting $($($($approval[0]).release).name)"
@@ -95,7 +95,7 @@ while(-Not($lastRelease -eq $currentRelease)) {
     
     try {
         # Make a patch request to the AzureDevOps' API to approve the release.
-        #$patch = Invoke-WebRequest -Uri $currentReleaseUrl -Method patch -Headers $azureDevOpsAuthenicationHeader -ContentType "application/json" -Body $updateStatusObj -ErrorAction Stop
+        $patch = Invoke-WebRequest -Uri $currentReleaseUrl -Method patch -Headers $azureDevOpsAuthenicationHeader -ContentType "application/json" -Body $updateStatusObj -ErrorAction Stop
         Start-Sleep -Milliseconds 10000
     }
     catch {
