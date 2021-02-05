@@ -16,7 +16,7 @@ $shouldRelease = ($weeksSince % 2) -eq 0
 if($shouldRelease) {
     "We're not releasing this week, one week left!"
     log "We're not releasing this week, one week left!"
-    exit
+    #exit
 }
 
 # Set basis to call AzureDevOps' Rest API as necessary.
@@ -70,7 +70,7 @@ while(-Not($lastRelease -eq $currentRelease)) {
     "Approval found for $($($($approval[0]).release).name)"
     log "Approval found for $($($($approval[0]).release).name)"
 
-    $updateStatusObj = $null;
+    #$updateStatusObj = $null;
 
     # All releases that are not the latest release are rejected.
     if(-Not($currentRelease -eq $lastRelease)) {
@@ -95,7 +95,7 @@ while(-Not($lastRelease -eq $currentRelease)) {
     
     try {
         # Make a patch request to the AzureDevOps' API to approve the release.
-        $patch = Invoke-WebRequest -Uri $currentReleaseUrl -Method patch -Headers $azureDevOpsAuthenicationHeader -ContentType "application/json" -Body $updateStatusObj -ErrorAction Stop
+        #$patch = Invoke-WebRequest -Uri $currentReleaseUrl -Method patch -Headers $azureDevOpsAuthenicationHeader -ContentType "application/json" -Body $updateStatusObj -ErrorAction Stop
         Start-Sleep -Milliseconds 10000
     }
     catch {
