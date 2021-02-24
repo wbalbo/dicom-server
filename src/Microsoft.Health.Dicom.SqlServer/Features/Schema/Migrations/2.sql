@@ -1201,7 +1201,8 @@ BEGIN
     SET NOCOUNT     ON
     SET XACT_ABORT  ON
 
-    SELECT  TagPath,
+    SELECT  TagKey,
+            TagPath,
             TagVR,
             TagLevel,
             TagStatus

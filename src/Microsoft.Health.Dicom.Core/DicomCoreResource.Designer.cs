@@ -106,6 +106,15 @@ namespace Microsoft.Health.Dicom.Core {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No custom tags can be found..
+        /// </summary>
+        internal static string CustomTagsDoNotExist {
+            get {
+                return ResourceManager.GetString("CustomTagsDoNotExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The data store operation failed..
         /// </summary>
         internal static string DataStoreOperationFailed {
@@ -374,6 +383,15 @@ namespace Microsoft.Health.Dicom.Core {
         internal static string MissingVRCode {
             get {
                 return ResourceManager.GetString("MissingVRCode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Multiple custom tags found for the specified tag path {0}.
+        /// </summary>
+        internal static string MultipleCustomTagsFound {
+            get {
+                return ResourceManager.GetString("MultipleCustomTagsFound", resourceCulture);
             }
         }
         

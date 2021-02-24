@@ -55,11 +55,30 @@ namespace Microsoft.Health.Dicom.Core.Features.Query
             _valueParsers.Add(DicomVRCode.SH, ParseStringTagValue);
             _valueParsers.Add(DicomVRCode.PN, ParseStringTagValue);
             _valueParsers.Add(DicomVRCode.CS, ParseStringTagValue);
+
+            _valueParsers.Add(DicomVRCode.DT, ParseDateTagValue);
+            _valueParsers.Add(DicomVRCode.TM, ParseDateTagValue);
+
+            _valueParsers.Add(DicomVRCode.AE, ParseStringTagValue);
+            _valueParsers.Add(DicomVRCode.AS, ParseStringTagValue);
+            _valueParsers.Add(DicomVRCode.DS, ParseStringTagValue);
+            _valueParsers.Add(DicomVRCode.IS, ParseStringTagValue);
+
+            _valueParsers.Add(DicomVRCode.AT, ParseLongTagValue);
+            _valueParsers.Add(DicomVRCode.SL, ParseLongTagValue);
+            _valueParsers.Add(DicomVRCode.SS, ParseLongTagValue);
+            _valueParsers.Add(DicomVRCode.UL, ParseLongTagValue);
+            _valueParsers.Add(DicomVRCode.US, ParseLongTagValue);
+
+            _valueParsers.Add(DicomVRCode.FL, ParseDoubleTagValue);
+            _valueParsers.Add(DicomVRCode.FD, ParseDoubleTagValue);
         }
 
-        public QueryExpression Parse(QueryResourceRequest request)
+        public QueryExpression Parse(QueryResourceRequest request, IDictionary<QueryResource, HashSet<CustomTagFilterDetails>> customTagMapping)
         {
             EnsureArg.IsNotNull(request, nameof(request));
+
+            HashSet<CustomTagFilterDetails> queriedCustomTags = new HashSet<CustomTagFilterDetails>();
 
             _parsedQuery = new QueryExpressionImp();
 
@@ -75,7 +94,7 @@ namespace Microsoft.Health.Dicom.Core.Features.Query
                 }
 
                 // filter conditions with attributeId as key
-                if (ParseFilterCondition(queryParam, request.QueryResourceType, out QueryFilterCondition condition))
+                if (ParseFilterCondition(queryParam, request.QueryResourceType, out QueryFilterCondition condition, customTagMapping))
                 {
                     if (_parsedQuery.FilterConditionTags.Contains(condition.DicomTag))
                     {
@@ -84,6 +103,12 @@ namespace Microsoft.Health.Dicom.Core.Features.Query
 
                     _parsedQuery.FilterConditionTags.Add(condition.DicomTag);
                     _parsedQuery.FilterConditions.Add(condition);
+
+                    if (condition.CustomTagFilterDetails != null)
+                    {
+                        queriedCustomTags.Add(condition.CustomTagFilterDetails);
+                    }
+
                     continue;
                 }
 
@@ -111,7 +136,8 @@ namespace Microsoft.Health.Dicom.Core.Features.Query
                 _parsedQuery.FuzzyMatch,
                 _parsedQuery.Limit,
                 _parsedQuery.Offset,
-                _parsedQuery.FilterConditions);
+                _parsedQuery.FilterConditions,
+                queriedCustomTags);
         }
 
         private static void PostProcessFilterConditions(QueryExpressionImp parsedQuery)
@@ -133,7 +159,11 @@ namespace Microsoft.Health.Dicom.Core.Features.Query
             }
         }
 
-        private bool ParseFilterCondition(KeyValuePair<string, StringValues> queryParameter, QueryResource resourceType, out QueryFilterCondition condition)
+        private bool ParseFilterCondition(
+            KeyValuePair<string, StringValues> queryParameter,
+            QueryResource resourceType,
+            out QueryFilterCondition condition,
+            IDictionary<QueryResource, HashSet<CustomTagFilterDetails>> customTagMapping = null)
         {
             condition = null;
             var attributeId = queryParameter.Key.Trim();
@@ -144,7 +174,8 @@ namespace Microsoft.Health.Dicom.Core.Features.Query
                 return false;
             }
 
-            ValidateIfTagSupported(dicomTag, attributeId, resourceType);
+            CustomTagFilterDetails customTagFilterDetails;
+            ValidateIfTagSupported(dicomTag, attributeId, resourceType, out customTagFilterDetails, customTagMapping);
 
             // parse tag value
             if (!queryParameter.Value.Any() || queryParameter.Value.Count > 1)
@@ -164,6 +195,8 @@ namespace Microsoft.Health.Dicom.Core.Features.Query
                 condition = valueParser(dicomTag, trimmedValue);
             }
 
+            condition.CustomTagFilterDetails = customTagFilterDetails;
+
             return condition != null;
         }
 
@@ -180,12 +213,18 @@ namespace Microsoft.Health.Dicom.Core.Features.Query
             return succeed;
         }
 
-        private static void ValidateIfTagSupported(DicomTag dicomTag, string attributeId, QueryResource resourceType)
+        private static void ValidateIfTagSupported(DicomTag dicomTag, string attributeId, QueryResource resourceType, out CustomTagFilterDetails customTagFilterDetails, IDictionary<QueryResource, HashSet<CustomTagFilterDetails>> customTagMapping = null)
         {
+            customTagFilterDetails = null;
             HashSet<DicomTag> supportedQueryTags = QueryLimit.QueryResourceTypeToTagsMapping[resourceType];
 
             if (!supportedQueryTags.Contains(dicomTag))
             {
+                if (customTagMapping != null && customTagMapping.ContainsKey(resourceType) && customTagMapping[resourceType].TryGetValue(new CustomTagFilterDetails(dicomTag), out customTagFilterDetails))
+                {
+                    return;
+                }
+
                 throw new QueryParseException(string.Format(DicomCoreResource.UnsupportedSearchParameter, attributeId));
             }
         }

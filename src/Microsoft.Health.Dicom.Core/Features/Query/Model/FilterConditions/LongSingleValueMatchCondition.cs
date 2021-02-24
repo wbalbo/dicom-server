@@ -2,15 +2,22 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
-
-using System.Collections.Generic;
-using Microsoft.Health.Dicom.Core.Features.Query.Model;
-using Microsoft.Health.Dicom.Core.Messages.Query;
+using Dicom;
+using EnsureThat;
 
 namespace Microsoft.Health.Dicom.Core.Features.Query
 {
-    public interface IQueryParser
+    public class LongSingleValueMatchCondition : SingleValueMatchCondition<long>
     {
-        QueryExpression Parse(QueryResourceRequest request, IDictionary<QueryResource, HashSet<CustomTagFilterDetails>> customTagMapping = null);
+        internal LongSingleValueMatchCondition(DicomTag tag, long value)
+            : base(tag, value)
+        {
+        }
+
+        public override void Accept(QueryFilterConditionVisitor visitor)
+        {
+            EnsureArg.IsNotNull(visitor, nameof(visitor));
+            visitor.Visit(this);
+        }
     }
 }

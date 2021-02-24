@@ -53,6 +53,7 @@ namespace Microsoft.Health.Dicom.SqlServer.Features.CustomTag
             using (SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateSqlCommand())
             {
                 IEnumerable<AddCustomTagsInputTableTypeV1Row> rows = customTagEntries.Select(ToAddCustomTagsInputTableTypeV1Row);
+
                 VLatest.AddCustomTags.PopulateCommand(sqlCommandWrapper, new VLatest.AddCustomTagsTableValuedParameters(rows));
 
                 try
@@ -91,14 +92,14 @@ namespace Microsoft.Health.Dicom.SqlServer.Features.CustomTag
                 {
                     while (await reader.ReadAsync(cancellationToken))
                     {
-                        (long key, string tagPath, string tagVR, int tagLevel, int tagStatus) = reader.ReadRow(
-                           VLatest.CustomTag.TagKey,
-                           VLatest.CustomTag.TagPath,
-                           VLatest.CustomTag.TagVR,
-                           VLatest.CustomTag.TagLevel,
-                           VLatest.CustomTag.TagStatus);
+                        (long tagKey, string tagPath, string tagVR, int tagLevel, int tagStatus) = reader.ReadRow(
+                            VLatest.CustomTag.TagKey,
+                            VLatest.CustomTag.TagPath,
+                            VLatest.CustomTag.TagVR,
+                            VLatest.CustomTag.TagLevel,
+                            VLatest.CustomTag.TagStatus);
 
-                        results.Add(new CustomTagStoreEntry(key, tagPath, tagVR, (CustomTagLevel)tagLevel, (CustomTagStatus)tagStatus));
+                        results.Add(new CustomTagStoreEntry(tagKey, tagPath, tagVR, (CustomTagLevel)tagLevel, (CustomTagStatus)tagStatus));
                     }
                 }
             }

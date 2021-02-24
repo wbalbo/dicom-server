@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Dicom;
 using EnsureThat;
 using Microsoft.Health.Dicom.Core.Features.Common;
+using Microsoft.Health.Dicom.Core.Features.CustomTag;
 using Microsoft.Health.Dicom.Core.Features.Query.Model;
 using Microsoft.Health.Dicom.Core.Features.Validation;
 using Microsoft.Health.Dicom.Core.Messages.Query;
@@ -22,18 +23,26 @@ namespace Microsoft.Health.Dicom.Core.Features.Query
         private readonly IQueryParser _queryParser;
         private readonly IQueryStore _queryStore;
         private readonly IMetadataStore _metadataStore;
+        private readonly ICustomTagStore _customTagStore;
+        private readonly IDicomTagParser _dicomTagPathParser;
 
         public QueryService(
             IQueryParser queryParser,
             IQueryStore queryStore,
-            IMetadataStore metadataStore)
+            IMetadataStore metadataStore,
+            ICustomTagStore customTagStore,
+            IDicomTagParser dicomTagPathParser)
         {
             EnsureArg.IsNotNull(queryParser, nameof(queryParser));
             EnsureArg.IsNotNull(queryStore, nameof(queryStore));
+            EnsureArg.IsNotNull(customTagStore, nameof(customTagStore));
+            EnsureArg.IsNotNull(dicomTagPathParser, nameof(dicomTagPathParser));
 
             _queryParser = queryParser;
             _queryStore = queryStore;
             _metadataStore = metadataStore;
+            _customTagStore = customTagStore;
+            _dicomTagPathParser = dicomTagPathParser;
         }
 
         public async Task<QueryResourceResponse> QueryAsync(
@@ -44,7 +53,11 @@ namespace Microsoft.Health.Dicom.Core.Features.Query
 
             ValidateRequestIdentifiers(message);
 
-            QueryExpression queryExpression = _queryParser.Parse(message);
+            IEnumerable<CustomTagStoreEntry> customTags = await _customTagStore.GetCustomTagsAsync(null, cancellationToken);
+
+            Dictionary<QueryResource, HashSet<CustomTagFilterDetails>> queryResourceToCustomTagMapping = GenerateQueryResourceToCustomTagMapping(customTags);
+
+            QueryExpression queryExpression = _queryParser.Parse(message, queryResourceToCustomTagMapping);
 
             QueryResult queryResult = await _queryStore.QueryAsync(queryExpression, cancellationToken);
 
@@ -61,6 +74,53 @@ namespace Microsoft.Health.Dicom.Core.Features.Query
             IEnumerable<DicomDataset> responseMetadata = instanceMetadata.Select(m => responseBuilder.GenerateResponseDataset(m));
 
             return new QueryResourceResponse(responseMetadata);
+        }
+
+        private Dictionary<QueryResource, HashSet<CustomTagFilterDetails>> GenerateQueryResourceToCustomTagMapping(IEnumerable<CustomTagStoreEntry> customTags)
+        {
+            Dictionary<QueryResource, HashSet<CustomTagFilterDetails>> ret = new Dictionary<QueryResource, HashSet<CustomTagFilterDetails>>();
+
+            foreach (CustomTagStoreEntry customTag in customTags)
+            {
+                DicomTag[] result;
+                DicomTag dicomTag;
+                if (customTag.Status.Equals(CustomTagStatus.Added) && _dicomTagPathParser.TryParse(customTag.Path, out result))
+                {
+                    dicomTag = result[0];
+
+                    if (customTag.Level.Equals(CustomTagLevel.Instance))
+                    {
+                        ret.TryAdd(QueryResource.AllInstances, new HashSet<CustomTagFilterDetails>());
+
+                        ret[QueryResource.AllInstances].Add(new CustomTagFilterDetails(customTag.Key, customTag.Level, dicomTag));
+
+                        ret.TryAdd(QueryResource.StudyInstances, new HashSet<CustomTagFilterDetails>());
+
+                        ret[QueryResource.StudyInstances].Add(new CustomTagFilterDetails(customTag.Key, customTag.Level, dicomTag));
+
+                        ret.TryAdd(QueryResource.StudySeriesInstances, new HashSet<CustomTagFilterDetails>());
+
+                        ret[QueryResource.StudySeriesInstances].Add(new CustomTagFilterDetails(customTag.Key, customTag.Level, dicomTag));
+                    }
+
+                    if (customTag.Level.Equals(CustomTagLevel.Instance) || customTag.Level.Equals(CustomTagLevel.Series))
+                    {
+                        ret.TryAdd(QueryResource.AllSeries, new HashSet<CustomTagFilterDetails>());
+
+                        ret[QueryResource.AllSeries].Add(new CustomTagFilterDetails(customTag.Key, customTag.Level, dicomTag));
+
+                        ret.TryAdd(QueryResource.StudySeries, new HashSet<CustomTagFilterDetails>());
+
+                        ret[QueryResource.StudySeries].Add(new CustomTagFilterDetails(customTag.Key, customTag.Level, dicomTag));
+                    }
+
+                    ret.TryAdd(QueryResource.AllStudies, new HashSet<CustomTagFilterDetails>());
+
+                    ret[QueryResource.AllStudies].Add(new CustomTagFilterDetails(customTag.Key, customTag.Level, dicomTag));
+                }
+            }
+
+            return ret;
         }
 
         private static void ValidateRequestIdentifiers(QueryResourceRequest message)

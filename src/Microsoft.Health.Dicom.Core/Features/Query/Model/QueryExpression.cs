@@ -20,7 +20,8 @@ namespace Microsoft.Health.Dicom.Core.Features.Query.Model
             bool fuzzyMatching,
             int limit,
             int offset,
-            IReadOnlyCollection<QueryFilterCondition> filterConditions)
+            IReadOnlyCollection<QueryFilterCondition> filterConditions,
+            HashSet<CustomTagFilterDetails> queriedCustomTagFilterDetails = null)
         {
             QueryResource = resourceType;
             IncludeFields = includeFields;
@@ -28,6 +29,7 @@ namespace Microsoft.Health.Dicom.Core.Features.Query.Model
             Limit = limit;
             Offset = offset;
             FilterConditions = filterConditions;
+            QueriedCustomTagFilterDetails = queriedCustomTagFilterDetails ?? new HashSet<CustomTagFilterDetails>();
 
             SetIELevel();
          }
@@ -46,6 +48,11 @@ namespace Microsoft.Health.Dicom.Core.Features.Query.Model
         /// Dicom tags to include in query result
         /// </summary>
         public QueryIncludeField IncludeFields { get; }
+
+        /// <summary>
+        /// Filter details associated with the custom tags being queried.
+        /// </summary>
+        public HashSet<CustomTagFilterDetails> QueriedCustomTagFilterDetails { get; }
 
         /// <summary>
         /// If true do Fuzzy matching of PN tag types
