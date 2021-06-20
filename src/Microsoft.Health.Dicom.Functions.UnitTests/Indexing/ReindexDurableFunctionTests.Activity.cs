@@ -31,9 +31,9 @@ namespace Microsoft.Health.Dicom.Functions.UnitTests.Indexing
             var expectedReturn = new[] { storeEntry1 };
 
             string operationId = Guid.NewGuid().ToString();
-            ReindexEntry entry1 = new ReindexEntry() { StartWatermark = 0, EndWatermark = 1, OperationId = operationId, Status = IndexStatus.Processing, TagKey = 1 };
-            ReindexEntry entry2 = new ReindexEntry() { StartWatermark = 0, EndWatermark = 1, OperationId = operationId, Status = IndexStatus.Completed, TagKey = 2 };
-            ReindexEntry entry3 = new ReindexEntry() { StartWatermark = 0, EndWatermark = 1, OperationId = operationId, Status = IndexStatus.Paused, TagKey = 3 };
+            ReindexEntry entry1 = new ReindexEntry() { StartWatermark = 0, EndWatermark = 1, OperationId = operationId, Status = IndexStatus.Processing, StoreEntry = 1 };
+            ReindexEntry entry2 = new ReindexEntry() { StartWatermark = 0, EndWatermark = 1, OperationId = operationId, Status = IndexStatus.Completed, StoreEntry = 2 };
+            ReindexEntry entry3 = new ReindexEntry() { StartWatermark = 0, EndWatermark = 1, OperationId = operationId, Status = IndexStatus.Paused, StoreEntry = 3 };
             _reindexStore.GetReindexEntriesAsync(operationId, Arg.Any<CancellationToken>()).Returns(new[] { entry1, entry2, entry3 });
             _extendedQueryTagStore.GetExtendedQueryTagsAsync(Arg.Is<IReadOnlyList<int>>(x => x.SequenceEqual(new int[] { 1 })), Arg.Any<CancellationToken>()).Returns(expectedReturn);
             var result = await _reindexDurableFunction.GetProcessingTagsAsync(operationId, NullLogger.Instance);

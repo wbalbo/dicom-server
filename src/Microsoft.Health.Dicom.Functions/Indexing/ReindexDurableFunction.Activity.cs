@@ -78,11 +78,10 @@ namespace Microsoft.Health.Dicom.Functions.Indexing
             log.LogInformation("Getting query tags which is being processed by operation {operationId}", operationId);
             var entries = await _reindexStore.GetReindexEntriesAsync(operationId);
             // only process tags which is on Processing
-            var tagKeys = entries
-                .Where(x => x.Status == IndexStatus.Processing)
-                .Select(y => y.TagKey)
-                .ToList();
-            return await _extendedQueryTagStore.GetExtendedQueryTagsAsync(tagKeys);
+            return entries
+                 .Where(x => x.Status == IndexStatus.Processing)
+                 .Select(y => y.StoreEntry)
+                 .ToList();
         }
 
         /// <summary>
@@ -141,6 +140,7 @@ namespace Microsoft.Health.Dicom.Functions.Indexing
             log.LogInformation("Fetching schema version");
             int version = await _schemaManagerDataStore.GetCurrentSchemaVersionAsync(default);
             _schemaInformation.Current = version;
+            await Task.Delay(5000);
             log.LogInformation("Schema version is {version}", version);
         }
     }

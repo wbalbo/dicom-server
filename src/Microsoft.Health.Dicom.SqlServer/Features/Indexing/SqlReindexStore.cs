@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using EnsureThat;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
+using Microsoft.Health.Dicom.Core.Exceptions;
 using Microsoft.Health.Dicom.Core.Features.ExtendedQueryTag;
 using Microsoft.Health.Dicom.Core.Features.Indexing;
 using Microsoft.Health.Dicom.SqlServer.Features.Schema.Model;
@@ -45,9 +46,55 @@ namespace Microsoft.Health.Dicom.SqlServer.Features.Indexing
             }
         }
 
-        public Task<IReadOnlyList<ReindexEntry>> GetReindexEntriesAsync(string operationId, CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyList<ReindexEntry>> GetReindexEntriesAsync(string operationId, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            EnsureArg.IsNotEmptyOrWhiteSpace(operationId, nameof(operationId));
+            List<ReindexEntry> result = new List<ReindexEntry>();
+            using (SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken))
+            using (SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateSqlCommand())
+            {
+                VLatest.GetReindexEntries.PopulateCommand(sqlCommandWrapper, operationId);
+                using SqlDataReader reader = await sqlCommandWrapper.ExecuteReaderAsync(CommandBehavior.SequentialAccess, cancellationToken);
+                try
+                {
+                    while (await reader.ReadAsync(cancellationToken))
+                    {
+                        (
+                            int rTagKey,
+                            string rTagPath,
+                            string rTagVR,
+                            string rTagPrivateCreator,
+                            byte rTagLevel,
+                            byte rTagStatus,
+                            string rOperationid,
+                            byte rReindexStatus,
+                            long? rStartWatermark,
+                            long? rEndWatermark
+
+                        ) = reader.ReadRow(
+                           VLatest.ExtendedQueryTag.TagKey,
+                           VLatest.ExtendedQueryTag.TagPath,
+                           VLatest.ExtendedQueryTag.TagVR,
+                           VLatest.ExtendedQueryTag.TagPrivateCreator,
+                           VLatest.ExtendedQueryTag.TagLevel,
+                           VLatest.ExtendedQueryTag.TagStatus,
+                           VLatest.ReindexStore.OperationId,
+                           VLatest.ReindexStore.ReindexStatus,
+                           VLatest.ReindexStore.StartWatermark,
+                           VLatest.ReindexStore.EndWatermark);
+                        result.Add(new ReindexEntry()
+                        {
+                            StoreEntry = new ExtendedQueryTagStoreEntry(rTagKey, rTagPath, rTagVR, rTagPrivateCreator, (QueryTagLevel)rTagLevel, (ExtendedQueryTagStatus)rTagStatus),
+                            OperationId = rOperationid, Status = (IndexStatus)rReindexStatus, StartWatermark = rStartWatermark, EndWatermark = rEndWatermark
+                        });
+                    }
+                    return result;
+                }
+                catch (SqlException ex)
+                {
+                    throw new DataStoreException(ex);
+                }
+            }
         }
 
         public async Task<ReindexOperation> PrepareReindexingAsync(IReadOnlyList<int> tagKeys, string operationId, CancellationToken cancellationToken = default)

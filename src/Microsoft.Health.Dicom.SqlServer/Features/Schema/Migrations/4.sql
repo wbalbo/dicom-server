@@ -1647,3 +1647,27 @@ AS
     
     COMMIT TRANSACTION
 GO
+
+-- TODO: Update 4.diff.sql
+CREATE PROCEDURE dbo.GetReindexEntries (
+     @operationId VARCHAR(40)
+)
+AS
+
+    SET NOCOUNT     ON
+    SET XACT_ABORT  ON
+    SELECT
+        E.TagKey,
+        E.TagPath,
+        E.TagVR,
+        E.TagPrivateCreator,
+        E.TagLevel,
+        E.TagStatus,
+        R.OperationId,
+        R.ReindexStatus,
+        R.StartWatermark,
+        R.EndWatermark
+    FROM dbo.ExtendedQueryTag E
+    INNER JOIN dbo.ReindexStore R
+    ON E.TagKey = R.TagKey and R.OperationId = @operationId
+GO
