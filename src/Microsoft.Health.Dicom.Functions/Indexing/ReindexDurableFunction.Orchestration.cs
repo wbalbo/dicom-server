@@ -26,11 +26,11 @@ namespace Microsoft.Health.Dicom.Functions.Indexing
         /// <param name="logger">The logger.</param>
         /// <returns>The task.</returns>
         [FunctionName(nameof(AddAndReindexTagsAsync))]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
         public async Task AddAndReindexTagsAsync(
             [OrchestrationTrigger] IDurableOrchestrationContext context,
             ILogger logger)
         {
+            EnsureArg.IsNotNull(context, nameof(logger));
             EnsureArg.IsNotNull(context, nameof(context));
             await context.CallActivityAsync(nameof(FetchSchemaVersionAsync), null);
             var input = context.GetInput<IReadOnlyList<AddExtendedQueryTagEntry>>();
