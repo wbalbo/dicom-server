@@ -12,6 +12,7 @@ using Microsoft.Health.Dicom.Core.Features.Store;
 using Microsoft.Health.Dicom.Core.Registration;
 using Microsoft.Health.Dicom.SqlServer.Features.ChangeFeed;
 using Microsoft.Health.Dicom.SqlServer.Features.ExtendedQueryTag;
+using Microsoft.Health.Dicom.SqlServer.Features.Indexing;
 using Microsoft.Health.Dicom.SqlServer.Features.Query;
 using Microsoft.Health.Dicom.SqlServer.Features.Retrieve;
 using Microsoft.Health.Dicom.SqlServer.Features.Schema;
@@ -119,6 +120,11 @@ namespace Microsoft.Extensions.DependencyInjection
                 .AsSelf()
                 .AsImplementedInterfaces();
             services.Add<SqlStoreFactory<ISqlExtendedQueryTagStore, IExtendedQueryTagStore>>()
+                .Scoped()
+                .AsSelf()
+                .AsImplementedInterfaces();
+
+            services.Add<SqlReindexStore>()
                 .Scoped()
                 .AsSelf()
                 .AsImplementedInterfaces();

@@ -13,6 +13,7 @@ using Microsoft.Health.SqlServer.Features.Schema.Manager;
 using Microsoft.Health.Dicom.Functions.Indexing;
 using NSubstitute;
 using Microsoft.Health.Dicom.Operations.Functions.Configs;
+using Microsoft.Health.Dicom.Core.Configs;
 
 namespace Microsoft.Health.Dicom.Functions.UnitTests.Indexing
 {
