@@ -27,6 +27,7 @@ namespace Microsoft.Health.Dicom.SqlServer.Features.Schema.Model
         internal readonly static StudyTable Study = new StudyTable();
         internal readonly static AddExtendedQueryTagsProcedure AddExtendedQueryTags = new AddExtendedQueryTagsProcedure();
         internal readonly static AddInstanceProcedure AddInstance = new AddInstanceProcedure();
+        internal readonly static CompleteReindexingProcedure CompleteReindexing = new CompleteReindexingProcedure();
         internal readonly static DeleteDeletedInstanceProcedure DeleteDeletedInstance = new DeleteDeletedInstanceProcedure();
         internal readonly static DeleteExtendedQueryTagProcedure DeleteExtendedQueryTag = new DeleteExtendedQueryTagProcedure();
         internal readonly static DeleteInstanceProcedure DeleteInstance = new DeleteInstanceProcedure();
@@ -390,6 +391,22 @@ namespace Microsoft.Health.Dicom.SqlServer.Features.Schema.Model
             internal global::System.Collections.Generic.IEnumerable<InsertDoubleExtendedQueryTagTableTypeV1Row> DoubleExtendedQueryTags { get; }
             internal global::System.Collections.Generic.IEnumerable<InsertDateTimeExtendedQueryTagTableTypeV1Row> DateTimeExtendedQueryTags { get; }
             internal global::System.Collections.Generic.IEnumerable<InsertPersonNameExtendedQueryTagTableTypeV1Row> PersonNameExtendedQueryTags { get; }
+        }
+
+        internal class CompleteReindexingProcedure : StoredProcedure
+        {
+            internal CompleteReindexingProcedure() : base("dbo.CompleteReindexing")
+            {
+            }
+
+            private readonly ParameterDefinition<System.String> _operationId = new ParameterDefinition<System.String>("@operationId", global::System.Data.SqlDbType.VarChar, false, 40);
+
+            public void PopulateCommand(SqlCommandWrapper command, System.String operationId)
+            {
+                command.CommandType = global::System.Data.CommandType.StoredProcedure;
+                command.CommandText = "dbo.CompleteReindexing";
+                _operationId.AddParameter(command.Parameters, operationId);
+            }
         }
 
         internal class DeleteDeletedInstanceProcedure : StoredProcedure

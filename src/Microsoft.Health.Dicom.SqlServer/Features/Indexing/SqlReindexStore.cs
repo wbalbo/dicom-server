@@ -32,9 +32,17 @@ namespace Microsoft.Health.Dicom.SqlServer.Features.Indexing
             _sqlConnectionWrapperFactory = EnsureArg.IsNotNull(sqlConnectionWrapperFactory, nameof(sqlConnectionWrapperFactory));
             _logger = EnsureArg.IsNotNull(logger, nameof(logger));
         }
-        public Task CompleteReindexAsync(string operationId, CancellationToken cancellationToken = default)
+        public async Task CompleteReindexAsync(string operationId, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            EnsureArg.IsNotEmptyOrWhiteSpace(operationId, nameof(operationId));
+
+
+            using (SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken))
+            using (SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateSqlCommand())
+            {
+                VLatest.CompleteReindexing.PopulateCommand(sqlCommandWrapper, operationId);
+                await sqlCommandWrapper.ExecuteNonQueryAsync(cancellationToken);
+            }
         }
 
         public Task<IReadOnlyList<ReindexEntry>> GetReindexEntriesAsync(string operationId, CancellationToken cancellationToken = default)
@@ -44,7 +52,6 @@ namespace Microsoft.Health.Dicom.SqlServer.Features.Indexing
 
         public async Task<ReindexOperation> PrepareReindexingAsync(IReadOnlyList<int> tagKeys, string operationId, CancellationToken cancellationToken = default)
         {
-            // add ReindexEntry for each tagKey with Processing status
             EnsureArg.IsNotNull(tagKeys, nameof(tagKeys));
             EnsureArg.IsNotEmptyOrWhiteSpace(operationId, nameof(operationId));
             // TODO: if tagKeys is empty, throw exception?

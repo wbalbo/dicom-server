@@ -1,3 +1,4 @@
+-- TODO: dbo.ReindexStatus?
 CREATE TABLE dbo.ReindexStore (
     TagKey                  INT                  NOT NULL, --PK
     OperationId             VARCHAR(40)          NULL,
@@ -58,6 +59,26 @@ AS
     ON E.TagKey = I.TagKey
     INNER JOIN dbo.ReindexStore R
     ON E.TagKey = R.TagKey
+    
+    COMMIT TRANSACTION
+GO
+
+CREATE PROCEDURE dbo.CompleteReindexing(
+    @operationId VARCHAR(40)
+)
+AS
+    SET NOCOUNT ON
+    SET XACT_ABORT ON
+    BEGIN  TRANSACTION
+    -- 1. Update ReindexStore.ReindexStatus to Completed (2)
+    -- 2. Update ExtendedQueryTag.TagStatus to Ready (1)
+    -- TODO: verify all tagkeys are valid and also lock them for editing
+    UPDATE dbo.ReindexStore SET ReindexStatus = 1
+    WHERE OperationId = @operationId
+
+    UPDATE dbo.ExtendedQueryTag SET TagStatus = 1
+    WHERE TagKey IN
+    (SELECT TagKey FROM dbo.ReindexStore WHERE OperationId = @operationId)
     
     COMMIT TRANSACTION
 GO
