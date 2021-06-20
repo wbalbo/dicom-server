@@ -3,7 +3,6 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -46,10 +45,8 @@ namespace Microsoft.Health.Dicom.Functions.Indexing
             EnsureArg.IsNotNull(input, nameof(input));
             EnsureArg.IsNotNull(log, nameof(log));
             log.LogInformation("Adding extended query tags with {input}", input);
-
-            // TODO: change AddExtendedQueryTagAsync to return ExtendedQueryTagStoreEntry
-            await _addExtendedQueryTagService.AddExtendedQueryTagAsync(input);
-            return Array.Empty<ExtendedQueryTagStoreEntry>();
+            var output = await _addExtendedQueryTagService.AddExtendedQueryTagAsync(input);
+            return output.StoreEntries;
         }
 
         /// <summary>

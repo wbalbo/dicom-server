@@ -1467,19 +1467,31 @@ AS
              THROW 50409, 'extended query tags exceed max allowed count', 1 
         
         -- Check if tag with same path already exist
-        SELECT TagKey 
-        FROM dbo.ExtendedQueryTag WITH(HOLDLOCK) 
-        INNER JOIN @extendedQueryTags input 
-        ON input.TagPath = dbo.ExtendedQueryTag.TagPath 
-	    
-        IF @@ROWCOUNT <> 0
-            THROW 50409, 'extended query tag(s) already exist', 2 
+       IF EXISTS
+       (
+            SELECT TagKey 
+            FROM dbo.ExtendedQueryTag WITH(HOLDLOCK) 
+            INNER JOIN @extendedQueryTags input 
+            ON input.TagPath = dbo.ExtendedQueryTag.TagPath
+       )
+            THROW 50409, 'extended query tag(s) already exist', 2
 
         -- add to extended query tag table with status 1(Ready)
         INSERT INTO dbo.ExtendedQueryTag 
             (TagKey, TagPath, TagPrivateCreator, TagVR, TagLevel, TagStatus)
         SELECT NEXT VALUE FOR TagKeySequence, TagPath, TagPrivateCreator, TagVR, TagLevel, 1 FROM @extendedQueryTags
-        
+
+        -- Return tags
+        SELECT
+        E.TagKey,
+        E.TagPath,
+        E.TagVR,
+        E.TagPrivateCreator,
+        E.TagLevel,
+        E.TagStatus
+        FROM dbo.ExtendedQueryTag E INNER JOIN @extendedQueryTags I
+        ON E.TagPath = I.TagPath
+
     COMMIT TRANSACTION
 GO
 

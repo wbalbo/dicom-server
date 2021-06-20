@@ -42,10 +42,9 @@ namespace Microsoft.Health.Dicom.Core.Features.ExtendedQueryTag
 
             IEnumerable<AddExtendedQueryTagEntry> result = extendedQueryTags.Select(item => item.Normalize());
 
-            await _extendedQueryTagStoreFactory.GetInstance().AddExtendedQueryTagsAsync(result, _maxAllowedCount, cancellationToken);
+            var entries = await _extendedQueryTagStoreFactory.GetInstance().AddExtendedQueryTagsAsync(result, _maxAllowedCount, cancellationToken);
 
-            // Current solution is synchronous, no job uri is generated, so always return blank response.
-            return new AddExtendedQueryTagResponse();
+            return new AddExtendedQueryTagResponse() { StoreEntries = entries };
         }
     }
 }
