@@ -27,22 +27,17 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="serverBuilder">The DICOM server builder instance.</param>
         /// <param name="configuration">The configuration for the server.</param>
-        /// <param name="withHealthCheck"></param>
         /// <returns>The server builder.</returns>
-        public static IDicomServerBuilder AddBlobStorageDataStore(this IDicomServerBuilder serverBuilder, IConfiguration configuration, bool withHealthCheck = true)
+        public static IDicomServerBuilder AddBlobStorageDataStore(this IDicomServerBuilder serverBuilder, IConfiguration configuration)
         {
             EnsureArg.IsNotNull(serverBuilder, nameof(serverBuilder));
             EnsureArg.IsNotNull(configuration, nameof(configuration));
 
             serverBuilder.AddBlobPersistence(configuration);
+            serverBuilder.AddBlobHealthCheck();
 
-            if (withHealthCheck)
-            {
-                serverBuilder.AddBlobHealthCheck();
-            }
             return serverBuilder;
         }
-
         private static IDicomServerBuilder AddBlobPersistence(this IDicomServerBuilder serverBuilder, IConfiguration configuration)
         {
             IServiceCollection services = serverBuilder.Services;

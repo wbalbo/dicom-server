@@ -6,6 +6,7 @@
 using EnsureThat;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Dicom.Core.Configs;
 using Microsoft.Health.Dicom.Core.Modules;
@@ -34,8 +35,25 @@ namespace Microsoft.Health.Dicom.Operations.Functions.Registration
             services.AddMvcCore()
                 .AddNewtonsoftJson(x => x.SerializerSettings.Converters
                 .Add(new StringEnumConverter()));
-
+            System.Console.WriteLine("After AddMvcCore");
+            foreach (var item in services)
+            {
+                if (item.ServiceType == typeof(IHostedService))
+                {
+                    System.Console.WriteLine(item);
+                }
+            }
+            System.Console.WriteLine();
             services.RegisterAssemblyModules(typeof(ServiceModule).Assembly, new FeatureConfiguration() { EnableExtendedQueryTags = true }, new ServicesConfiguration());
+            System.Console.WriteLine("After RegisterAssemblyModules");
+            foreach (var item in services)
+            {
+                if (item.ServiceType == typeof(IHostedService))
+                {
+                    System.Console.WriteLine(item);
+                }
+            }
+            System.Console.WriteLine();
             return new DicomServerBuilder(services);
         }
         private class DicomServerBuilder : IDicomServerBuilder

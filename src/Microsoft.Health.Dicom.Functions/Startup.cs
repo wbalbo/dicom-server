@@ -9,7 +9,6 @@ using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Health.Blob.Features.Storage;
 using Microsoft.Health.Dicom.Operations.Functions.Registration;
 using Microsoft.Health.Extensions.DependencyInjection;
 
@@ -22,12 +21,58 @@ namespace Microsoft.Health.Dicom.Functions
         public override void Configure(IFunctionsHostBuilder builder)
         {
             EnsureArg.IsNotNull(builder, nameof(builder));
-            IConfiguration configuration = builder.GetContext().Configuration?.GetSection(AzureFunctionsJobHostSection);
-            builder.Services.AddDicomFunctions(configuration)
-                .AddSqlServer(configuration, initializeSchema: false)
-                .AddBlobStorageDataStore(configuration, withHealthCheck: false)
-                .AddMetadataStorageDataStore(configuration, withHealthCheck: false);
+#pragma warning disable CA1303 // Do not pass literals as localized parameters
+            System.Console.WriteLine("Before Config");
+#pragma warning restore CA1303 // Do not pass literals as localized parameters
+            foreach (var item in builder.Services)
+            {
+                if (item.ServiceType == typeof(IHostedService))
+                {
+                    System.Console.WriteLine(item);
+                }
+            }
+            System.Console.WriteLine();
 
+            IConfiguration configuration = builder.GetContext().Configuration?.GetSection(AzureFunctionsJobHostSection);
+
+            var server = builder.Services.AddDicomFunctions(configuration);
+#pragma warning disable CA1303 // Do not pass literals as localized parameters
+            System.Console.WriteLine("After AddDicomFunctions");
+#pragma warning restore CA1303 // Do not pass literals as localized parameters
+            foreach (var item in builder.Services)
+            {
+                if (item.ServiceType == typeof(IHostedService))
+                {
+                    System.Console.WriteLine(item);
+                }
+            }
+            System.Console.WriteLine();
+
+            server.AddSqlServer(configuration, initializeSchema: false);
+#pragma warning disable CA1303 // Do not pass literals as localized parameters
+            System.Console.WriteLine("After AddSqlServer");
+#pragma warning restore CA1303 // Do not pass literals as localized parameters
+            foreach (var item in builder.Services)
+            {
+                if (item.ServiceType == typeof(IHostedService))
+                {
+                    System.Console.WriteLine(item);
+                }
+            }
+            System.Console.WriteLine();
+
+            server.AddMetadataStorageDataStoreForAzureFunction(configuration);
+#pragma warning disable CA1303 // Do not pass literals as localized parameters
+            System.Console.WriteLine("After AddMetadataStorageDataStoreForAzureFunction");
+#pragma warning restore CA1303 // Do not pass literals as localized parameters
+            foreach (var item in builder.Services)
+            {
+                if (item.ServiceType == typeof(IHostedService))
+                {
+                    System.Console.WriteLine(item);
+                }
+            }
+            System.Console.WriteLine();
             List<ServiceDescriptor> providers = new List<ServiceDescriptor>();
             foreach (var item in builder.Services)
             {
@@ -52,14 +97,7 @@ namespace Microsoft.Health.Dicom.Functions
                     System.Console.WriteLine(item);
                 }
             }
-            foreach (var item in providers)
-            {
-                builder.Services.Remove(item);
-            }
 
-            builder.Services.Add<BlobClientProvider>()
-                .Singleton()
-                .AsSelf();
         }
     }
 }
