@@ -1,9 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk.Worker">
-
+﻿<Project Sdk="Microsoft.NET.Sdk.Worker">
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Ensure.That" Version="10.1.0" />
     <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.17.0" />
@@ -16,10 +14,9 @@
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="$(SdkPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="$(SdkPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Logging.ApplicationInsights" Version="2.17.0" />
-    <PackageReference Include="Microsoft.Health.Extensions.DependencyInjection" Version="$(HealthcareSharedPackageVersion)" />
+    <PackageReference Include="Microsoft.Health.Extensions.DependencyInjection" Version="1.0.0-mychange-20210621-132232-preview" />
     <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="5.2.9" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Health.DicomCast.Core\Microsoft.Health.DicomCast.Core.csproj" />
     <ProjectReference Include="..\Microsoft.Health.DicomCast.TableStorage\Microsoft.Health.DicomCast.TableStorage.csproj" />

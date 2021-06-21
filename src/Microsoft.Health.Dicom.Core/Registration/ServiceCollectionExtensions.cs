@@ -5,19 +5,18 @@
 
 using EnsureThat;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.Health.Dicom.Core.Registration
 {
     public static class ServiceCollectionExtensions
     {
-        public static void OutputHostedService(this IServiceCollection services, string title)
+        public static void Output<T>(this IServiceCollection services, string title)
         {
             EnsureArg.IsNotNull(services);
             System.Console.WriteLine(title);
             foreach (var item in services)
             {
-                if (item.ServiceType == typeof(IHostedService))
+                if (item.ServiceType == typeof(T))
                 {
                     System.Console.WriteLine(item);
                 }

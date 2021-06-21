@@ -1,22 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <IsPackable>true</IsPackable>
     <IncludeContentInPack>false</IncludeContentInPack>
   </PropertyGroup>
-
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="Ensure.That" Version="10.1.0" />
     <PackageReference Include="fo-dicom" Version="4.0.7" />
     <PackageReference Include="fo-dicom.Json" Version="4.0.7" NoWarn="NU1701" />
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="$(SdkPackageVersion)" />
-    <PackageReference Include="Microsoft.Health.Api" Version="$(HealthcareSharedPackageVersion)" />
-    <PackageReference Include="Microsoft.Health.Client" Version="$(HealthcareSharedPackageVersion)" />
+    <PackageReference Include="Microsoft.Health.Api" Version="1.0.0-mychange-20210621-132232-preview" />
+    <PackageReference Include="Microsoft.Health.Client" Version="1.0.0-mychange-20210621-132232-preview" />
     <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="2.1.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.10.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
@@ -24,7 +21,6 @@
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.Health.Dicom.Api\Microsoft.Health.Dicom.Api.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Health.Dicom.Client\Microsoft.Health.Dicom.Client.csproj" />
@@ -32,7 +28,6 @@
     <ProjectReference Include="..\..\src\Microsoft.Health.Dicom.Tests.Common\Microsoft.Health.Dicom.Tests.Common.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Health.Dicom.Web\Microsoft.Health.Dicom.Web.csproj" />
   </ItemGroup>
-
   <ItemGroup>
     <None Update="TestFiles\**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -41,13 +36,11 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-
   <ItemGroup>
     <Content Include="..\..\testauthenvironment.json" Link="testauthenvironment.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-
   <Target Name="VerifyExactSdkVersion" BeforeTargets="Build">
     <!--
       Verify that the we are compiling with the exact version of the SDK that is specified in the global.json file.
@@ -62,11 +55,9 @@
       <ParsedSdkVersion><![CDATA[$([System.Text.RegularExpressions.Regex]::Match($(GlobalJsonContent), '"version"\s*:\s*"(\d+.\d+.\d+)"').Groups[1].Value)]]></ParsedSdkVersion>
     </PropertyGroup>
   </Target>
-
   <Target Name="AddRuntimeConfigFileToBuiltProjectOutputGroupOutput" Condition=" '$(GenerateRuntimeConfigurationFiles)' == 'true'" BeforeTargets="BuiltProjectOutputGroup">
     <ItemGroup>
       <BuiltProjectOutputGroupOutput Include="$(ProjectRuntimeConfigFilePath)" FinalOutputPath="$(ProjectRuntimeConfigFilePath)" />
     </ItemGroup>
   </Target>
-
 </Project>

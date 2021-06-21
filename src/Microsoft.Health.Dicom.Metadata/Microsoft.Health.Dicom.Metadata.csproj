@@ -1,10 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Description>Utilities for managing a metadata store for use within Microsoft's DICOMweb APIs.</Description>
     <TargetFrameworks>netcoreapp3.1;net5.0</TargetFrameworks>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Azure.Core" Version="1.15.0" />
     <PackageReference Include="Azure.Storage.Blobs" Version="12.9.0" />
@@ -17,15 +15,13 @@
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="$(SdkPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(SdkPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="$(SdkPackageVersion)" />
-    <PackageReference Include="Microsoft.Health.Blob" Version="$(HealthcareSharedPackageVersion)" />
-    <PackageReference Include="Microsoft.Health.Extensions.DependencyInjection" Version="$(HealthcareSharedPackageVersion)" />
+    <PackageReference Include="Microsoft.Health.Blob" Version="1.0.0-mychange-20210621-132232-preview" />
+    <PackageReference Include="Microsoft.Health.Extensions.DependencyInjection" Version="1.0.0-mychange-20210621-132232-preview" />
     <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="2.1.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Scrutor" Version="3.3.0" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Health.Dicom.Core\Microsoft.Health.Dicom.Core.csproj" />
   </ItemGroup>
-
 </Project>

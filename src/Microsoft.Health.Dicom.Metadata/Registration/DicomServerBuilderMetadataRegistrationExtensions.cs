@@ -8,7 +8,6 @@ using System.Linq;
 using EnsureThat;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Blob.Configs;
@@ -71,10 +70,10 @@ namespace Microsoft.Extensions.DependencyInjection
                 .Singleton()
                 .AsService<IBlobContainerInitializer>();
 
-            services.Add<BlobMetadataStore>()
-                .Scoped()
-                .AsSelf()
-                .AsImplementedInterfaces();
+            services.AddScoped<IMetadataStore, BlobMetadataStore>();
+            services.AddScoped(typeof(BlobMetadataStore));
+
+            services.Output<BlobMetadataStore>("PENCHE BlobMetadataStore");
 
             // TODO: Ideally, the logger can be registered in the API layer since it's agnostic to the implementation.
             // However, the current implementation of the decorate method requires the concrete type to be already registered,
@@ -112,16 +111,19 @@ namespace Microsoft.Extensions.DependencyInjection
             services.Add<BlobClientProvider>()
                 .Singleton()
                 .AsSelf()
-                .AsService<IHostedService>() // so that it starts initializing ASAP
                 .AsService<IRequireInitializationOnFirstRequest>(); // so that web requests block on its initialization.
 
-            services.Add(sp => sp.GetService<BlobClientProvider>().CreateBlobClient())
+            services.Add(sp =>
+                {
+                    var clientProvider = sp.GetService<BlobClientProvider>();
+                    return clientProvider.CreateBlobClient();
+                })
                 .Singleton()
                 .AsSelf();
 
             services.Add<BlobClientReadWriteTestProvider>()
-                .Singleton()
-                .AsService<IBlobClientTestProvider>();
+                    .Singleton()
+                    .AsService<IBlobClientTestProvider>();
 
             services.Add<MyBlobClientInitializer>()
                 .Singleton()

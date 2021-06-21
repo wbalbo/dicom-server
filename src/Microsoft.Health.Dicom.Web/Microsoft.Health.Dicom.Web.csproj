@@ -1,11 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
-
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <IsPackable>true</IsPackable>
     <UserSecretsId>5af726e8-ef4d-4c66-9d3a-25b8d546261e</UserSecretsId>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Ensure.That" Version="10.1.0" />
     <PackageReference Include="IdentityServer4" Version="4.1.2" />
@@ -16,12 +14,11 @@
     <PackageReference Include="Microsoft.Azure.Services.AppAuthentication" Version="1.6.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.AzureKeyVault" Version="3.1.16" />
     <PackageReference Include="Microsoft.Extensions.Logging.ApplicationInsights" Version="2.17.0" />
-    <PackageReference Include="Microsoft.Health.Development.IdentityProvider" Version="$(HealthcareSharedPackageVersion)" />
-    <PackageReference Include="Microsoft.Health.SqlServer" Version="$(HealthcareSharedPackageVersion)" />
+    <PackageReference Include="Microsoft.Health.Development.IdentityProvider" Version="1.0.0-mychange-20210621-132232-preview" />
+    <PackageReference Include="Microsoft.Health.SqlServer" Version="1.0.0-mychange-20210621-132232-preview" />
     <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="5.2.9" />
     <PackageReference Include="System.Text.Encodings.Web" Version="5.0.1" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Health.Dicom.Api\Microsoft.Health.Dicom.Api.csproj" />
     <ProjectReference Include="..\Microsoft.Health.Dicom.Blob\Microsoft.Health.Dicom.Blob.csproj" />
@@ -30,15 +27,12 @@
     <ProjectReference Include="..\Microsoft.Health.Dicom.Functions.Client\Microsoft.Health.Dicom.Functions.Client.csproj" />
     <ProjectReference Include="..\Microsoft.Health.Dicom.SqlServer\Microsoft.Health.Dicom.SqlServer.csproj" />
   </ItemGroup>
-
   <ItemGroup>
     <Folder Include="wwwroot\" />
   </ItemGroup>
-
   <ProjectExtensions>
     <VisualStudio>
       <UserProperties appsettings_1json__JsonSchema="" />
     </VisualStudio>
   </ProjectExtensions>
-
 </Project>
