@@ -7,21 +7,23 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Health.Dicom.Core.Features.ExtendedQueryTag;
+using Microsoft.Health.Dicom.Core.Features.Model;
 
 namespace Microsoft.Health.Dicom.Core.Features.Indexing
 {
     /// <summary>
     /// Represents an Reindexer which reindexes DICOM instance.
     /// </summary>
+    // TODO: IInstanceReindexService?
     public interface IInstanceReindexer
     {
         /// <summary>
         /// Reindex DICOM instance of watermark on extended query tags.
         /// </summary>
         /// <param name="entries">Extended query tag store entries.</param>
-        /// <param name="watermark">The watermark to DICOM instance.</param>
+        /// <param name="instanceId">The watermark to DICOM instance.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The task.</returns>
-        Task ReindexInstanceAsync(IReadOnlyList<ExtendedQueryTagStoreEntry> entries, long watermark, CancellationToken cancellationToken = default);
+        Task ReindexInstanceAsync(IReadOnlyList<ExtendedQueryTagStoreEntry> entries, VersionedInstanceIdentifier instanceId, CancellationToken cancellationToken = default);
     }
 }

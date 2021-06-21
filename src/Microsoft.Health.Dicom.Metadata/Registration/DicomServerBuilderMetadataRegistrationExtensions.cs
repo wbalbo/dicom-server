@@ -27,15 +27,20 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="serverBuilder">The DICOM server builder instance.</param>
         /// <param name="configuration">The configuration for the server.</param>
+        /// <param name="withHealthCheck"></param>
         /// <returns>The server builder.</returns>
-        public static IDicomServerBuilder AddMetadataStorageDataStore(this IDicomServerBuilder serverBuilder, IConfiguration configuration)
+        public static IDicomServerBuilder AddMetadataStorageDataStore(this IDicomServerBuilder serverBuilder, IConfiguration configuration, bool withHealthCheck = false)
         {
             EnsureArg.IsNotNull(serverBuilder, nameof(serverBuilder));
             EnsureArg.IsNotNull(configuration, nameof(configuration));
 
-            return serverBuilder
-                        .AddMetadataPersistence(configuration)
-                        .AddMetadataHealthCheck();
+            serverBuilder
+                       .AddMetadataPersistence(configuration);
+            if (withHealthCheck)
+            {
+                serverBuilder.AddMetadataHealthCheck();
+            }
+            return serverBuilder;
         }
 
         private static IDicomServerBuilder AddMetadataPersistence(this IDicomServerBuilder serverBuilder, IConfiguration configuration)
