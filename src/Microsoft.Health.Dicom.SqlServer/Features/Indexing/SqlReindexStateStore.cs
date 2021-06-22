@@ -29,9 +29,16 @@ namespace Microsoft.Health.Dicom.SqlServer.Features.Indexing
             _sqlConnectionWrapperFactory = sqlConnectionWrapperFactory;
         }
 
-        public Task CompleteReindexAsync(string operationId, CancellationToken cancellationToken = default)
+        public async Task CompleteReindexAsync(string operationId, CancellationToken cancellationToken = default)
         {
-            throw new System.NotImplementedException();
+            EnsureArg.IsNotEmptyOrWhiteSpace(operationId, nameof(operationId));
+
+            using (SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken))
+            using (SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateSqlCommand())
+            {
+                VLatest.CompleteReindexing.PopulateCommand(sqlCommandWrapper, operationId);
+                await sqlCommandWrapper.ExecuteNonQueryAsync(cancellationToken);
+            }
         }
 
         public async Task<IReadOnlyCollection<ReindexStateEntry>> GetReindexEntriesAsync(string operationId, CancellationToken cancellationToken = default)
