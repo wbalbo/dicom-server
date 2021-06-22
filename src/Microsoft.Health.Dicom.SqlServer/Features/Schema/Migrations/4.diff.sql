@@ -138,3 +138,36 @@ AS
     
     COMMIT TRANSACTION
 GO
+
+/***************************************************************************************/
+-- STORED PROCEDURE
+--    GetReindexStateEntries
+--
+-- DESCRIPTION
+--    Get reindex state entries.
+--
+-- PARAMETERS
+--     @operationId
+--         * The operation id
+/***************************************************************************************/
+CREATE PROCEDURE dbo.GetReindexStateEntries (
+     @operationId VARCHAR(40)
+)
+AS
+    -- TODO: create index on operationId
+    SET NOCOUNT     ON
+    SET XACT_ABORT  ON
+    SELECT  E.TagKey,
+            E.TagPath,
+            E.TagVR,
+            E.TagPrivateCreator,
+            E.TagLevel,
+            E.TagStatus,
+            R.OperationId,
+            R.ReindexStatus,
+            R.StartWatermark,
+            R.EndWatermark
+    FROM dbo.ExtendedQueryTag E
+    INNER JOIN dbo.ReindexStore R
+    ON E.TagKey = R.TagKey and R.OperationId = @operationId
+GO

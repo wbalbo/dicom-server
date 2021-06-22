@@ -1,3 +1,4 @@
+
 -- NOTE: This script DROPS AND RECREATES all database objects.
 -- Style guide: please see: https://github.com/ktaranov/sqlserver-kit/blob/master/SQL%20Server%20Name%20Convention%20and%20T-SQL%20Programming%20Style.md
 
@@ -1644,4 +1645,37 @@ AS
         ON      E.TagKey = R.TagKey
     
     COMMIT TRANSACTION
+GO
+
+/***************************************************************************************/
+-- STORED PROCEDURE
+--    GetReindexStateEntries
+--
+-- DESCRIPTION
+--    Get reindex state entries.
+--
+-- PARAMETERS
+--     @operationId
+--         * The operation id
+/***************************************************************************************/
+CREATE PROCEDURE dbo.GetReindexStateEntries (
+     @operationId VARCHAR(40)
+)
+AS
+    -- TODO: create index on operationId
+    SET NOCOUNT     ON
+    SET XACT_ABORT  ON
+    SELECT  E.TagKey,
+            E.TagPath,
+            E.TagVR,
+            E.TagPrivateCreator,
+            E.TagLevel,
+            E.TagStatus,
+            R.OperationId,
+            R.ReindexStatus,
+            R.StartWatermark,
+            R.EndWatermark
+    FROM dbo.ExtendedQueryTag E
+    INNER JOIN dbo.ReindexStore R
+    ON E.TagKey = R.TagKey and R.OperationId = @operationId
 GO

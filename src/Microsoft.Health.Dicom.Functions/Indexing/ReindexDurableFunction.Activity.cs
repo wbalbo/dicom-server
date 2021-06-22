@@ -62,11 +62,10 @@ namespace Microsoft.Health.Dicom.Functions.Indexing
             log.LogInformation("Getting query tags which is being processed by operation {operationId}", operationId);
             var entries = await _reindexStore.GetReindexEntriesAsync(operationId);
             // only process tags which is on Processing
-            var tagKeys = entries
+            return entries
                 .Where(x => x.Status == IndexStatus.Processing)
-                .Select(y => y.TagKey)
+                .Select(y => y.StoreEntry)
                 .ToList();
-            return await _extendedQueryTagStore.GetExtendedQueryTagsAsync(tagKeys);
         }
 
         /// <summary>
