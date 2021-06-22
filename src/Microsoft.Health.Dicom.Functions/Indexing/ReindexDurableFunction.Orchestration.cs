@@ -35,14 +35,18 @@ namespace Microsoft.Health.Dicom.Functions.Indexing
                 nameof(PrepareReindexingTagsAsync),
                 new PrepareReindexingTagsInput { OperationId = context.InstanceId, TagKeys = tagKeys });
 
-            var storeEntries =
-                await context.CallActivityAsync<IReadOnlyList<ExtendedQueryTagStoreEntry>>(nameof(GetProcessingTagsAsync), reindexOperation.OperationId);
-            ReindexInstanceInput reindexInstanceInput = new ReindexInstanceInput
+            if (reindexOperation.StartWatermark.HasValue && reindexOperation.EndWatermark.HasValue)
             {
-                TagStoreEntries = storeEntries,
-                WatermarkRange = (Start: reindexOperation.StartWatermark, End: reindexOperation.EndWatermark)
-            };
-            await context.CallActivityAsync(nameof(ReindexInstancesAsync), reindexInstanceInput);
+                var storeEntries =
+                    await context.CallActivityAsync<IReadOnlyList<ExtendedQueryTagStoreEntry>>(nameof(GetProcessingTagsAsync), reindexOperation.OperationId);
+                ReindexInstanceInput reindexInstanceInput = new ReindexInstanceInput
+                {
+                    TagStoreEntries = storeEntries,
+                    WatermarkRange = (Start: reindexOperation.StartWatermark.Value, End: reindexOperation.EndWatermark.Value)
+                };
+
+                await context.CallActivityAsync(nameof(ReindexInstancesAsync), reindexInstanceInput);
+            }
 
             await context.CallActivityAsync(nameof(CompleteReindexingTagsAsync), reindexOperation.OperationId);
         }

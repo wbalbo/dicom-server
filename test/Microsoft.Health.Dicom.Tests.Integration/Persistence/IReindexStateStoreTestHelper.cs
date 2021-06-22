@@ -2,18 +2,13 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
+using System.Threading;
+using System.Threading.Tasks;
 
-namespace Microsoft.Health.Dicom.SqlServer.Features.Schema
+namespace Microsoft.Health.Dicom.Tests.Integration.Persistence
 {
-    /// <summary>
-    /// Enum to keep track of available SQL schema versions.
-    /// </summary>
-    public enum SchemaVersion
+    public interface IReindexStateStoreTestHelper
     {
-        Unknown = 0,
-        V1 = 1,
-        V2 = 2,
-        V3 = 3,
-        V4 = 4
+        Task CleanupAsync(CancellationToken cancellationToken = default);
     }
 }
