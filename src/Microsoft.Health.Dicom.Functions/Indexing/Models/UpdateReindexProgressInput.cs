@@ -6,7 +6,7 @@
 namespace Microsoft.Health.Dicom.Functions.Indexing.Models
 {
     /// <summary>
-    /// Represents input to activity <see cref="ReindexDurableFunction.UpdateReindexProgressAsync"/>.
+    /// Represents input to activity <see cref="ReindexDurableFunction"/>.
     /// </summary>
     public class UpdateReindexProgressInput
     {

@@ -3,7 +3,6 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -32,24 +31,6 @@ namespace Microsoft.Health.Dicom.Functions.Indexing
 
             log.LogInformation("Completing Reindex operation on {operationId}", operationId);
             return _reindexStore.CompleteReindexAsync(operationId);
-        }
-
-        /// <summary>
-        ///  The activity to add extended query tags.
-        /// </summary>
-        /// <param name="input">The input.</param>
-        /// <param name="log">The log.</param>
-        /// <returns>The store entries.</returns>
-        [FunctionName(nameof(AddTagsAsync))]
-        public async Task<IReadOnlyList<ExtendedQueryTagStoreEntry>> AddTagsAsync([ActivityTrigger] IReadOnlyList<AddExtendedQueryTagEntry> input, ILogger log)
-        {
-            EnsureArg.IsNotNull(input, nameof(input));
-            EnsureArg.IsNotNull(log, nameof(log));
-            log.LogInformation("Adding extended query tags with {input}", input);
-
-            // TODO: change AddExtendedQueryTagAsync to return ExtendedQueryTagStoreEntry
-            await _addExtendedQueryTagService.AddExtendedQueryTagAsync(input);
-            return Array.Empty<ExtendedQueryTagStoreEntry>();
         }
 
         /// <summary>
@@ -89,22 +70,6 @@ namespace Microsoft.Health.Dicom.Functions.Indexing
         }
 
         /// <summary>
-        ///  The activity to update end watermark of an operation.
-        /// </summary>
-        /// <param name="input">The input.</param>
-        /// <param name="log">The log</param>
-        /// <returns>The task.</returns>
-        [FunctionName(nameof(UpdateReindexProgressAsync))]
-        public Task UpdateReindexProgressAsync([ActivityTrigger] UpdateReindexProgressInput input, ILogger log)
-        {
-            EnsureArg.IsNotNull(input, nameof(input));
-            EnsureArg.IsNotNull(log, nameof(log));
-
-            log.LogInformation("Updating reindex progress with {input}", input);
-            return _reindexStore.UpdateReindexProgressAsync(input.OperationId, input.EndWatermark);
-        }
-
-        /// <summary>
         /// The activity to reindex  Dicom instances.
         /// </summary>
         /// <param name="input">The input</param>
@@ -120,13 +85,11 @@ namespace Microsoft.Health.Dicom.Functions.Indexing
 
             var instanceIdentifiers = await _instanceStore.GetInstanceIdentifiersAsync(input.WatermarkRange);
 
-            var tasks = new List<Task>();
             foreach (var instanceIdentifier in instanceIdentifiers)
             {
-                tasks.Add(_instanceReindexer.ReindexInstanceAsync(input.TagStoreEntries, instanceIdentifier.Version));
+                await _instanceReindexer.ReindexInstanceAsync(input.TagStoreEntries, instanceIdentifier.Version);
             }
 
-            await Task.WhenAll(tasks);
         }
     }
 }
