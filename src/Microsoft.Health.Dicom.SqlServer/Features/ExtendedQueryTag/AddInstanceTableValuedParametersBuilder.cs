@@ -81,6 +81,58 @@ namespace Microsoft.Health.Dicom.SqlServer.Features.ExtendedQueryTag
             return new VLatest.AddInstanceTableValuedParameters(stringRows, longRows, doubleRows, dateTimeRows, personNamRows);
         }
 
+        public static VLatest.ReindexInstanceTableValuedParameters BuildReindex(
+            DicomDataset instance,
+           IEnumerable<QueryTag> queryTags)
+        {
+            EnsureArg.IsNotNull(instance, nameof(instance));
+            EnsureArg.IsNotNull(queryTags, nameof(queryTags));
+
+            List<InsertStringExtendedQueryTagTableTypeV1Row> stringRows = new List<InsertStringExtendedQueryTagTableTypeV1Row>();
+            List<InsertLongExtendedQueryTagTableTypeV1Row> longRows = new List<InsertLongExtendedQueryTagTableTypeV1Row>();
+            List<InsertDoubleExtendedQueryTagTableTypeV1Row> doubleRows = new List<InsertDoubleExtendedQueryTagTableTypeV1Row>();
+            List<InsertDateTimeExtendedQueryTagTableTypeV1Row> dateTimeRows = new List<InsertDateTimeExtendedQueryTagTableTypeV1Row>();
+            List<InsertPersonNameExtendedQueryTagTableTypeV1Row> personNamRows = new List<InsertPersonNameExtendedQueryTagTableTypeV1Row>();
+
+            foreach (var queryTag in queryTags)
+            {
+                ExtendedQueryTagDataType dataType = ExtendedQueryTagLimit.ExtendedQueryTagVRAndDataTypeMapping[queryTag.VR.Code];
+                switch (dataType)
+                {
+                    case ExtendedQueryTagDataType.StringData:
+                        AddStringRow(instance, stringRows, queryTag);
+
+                        break;
+
+                    case ExtendedQueryTagDataType.LongData:
+                        AddLongRow(instance, longRows, queryTag);
+
+                        break;
+
+                    case ExtendedQueryTagDataType.DoubleData:
+                        AddDoubleRow(instance, doubleRows, queryTag);
+
+                        break;
+
+                    case ExtendedQueryTagDataType.DateTimeData:
+                        AddDateTimeRow(instance, dateTimeRows, queryTag);
+
+                        break;
+
+                    case ExtendedQueryTagDataType.PersonNameData:
+                        AddPersonNameRow(instance, personNamRows, queryTag);
+
+                        break;
+
+                    default:
+                        Debug.Fail($"Not able to handle {dataType}");
+                        break;
+                }
+            }
+
+            return new VLatest.ReindexInstanceTableValuedParameters(stringRows, longRows, doubleRows, dateTimeRows, personNamRows);
+        }
+
         private static void AddPersonNameRow(DicomDataset instance, List<InsertPersonNameExtendedQueryTagTableTypeV1Row> personNamRows, QueryTag queryTag)
         {
             string personNameVal = instance.GetSingleValueOrDefault<string>(queryTag.Tag, expectedVR: queryTag.VR);

@@ -86,7 +86,7 @@ namespace Microsoft.Health.Dicom.Functions.Indexing
 
             foreach (var instanceIdentifier in instanceIdentifiers)
             {
-                await _instanceReindexer.ReindexInstanceAsync(input.TagStoreEntries, instanceIdentifier.Version);
+                await _instanceReindexer.ReindexInstanceAsync(input.TagStoreEntries, instanceIdentifier);
             }
 
         }
