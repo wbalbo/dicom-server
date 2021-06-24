@@ -1522,11 +1522,9 @@ GO
 /***************************************************************************************/
 CREATE PROCEDURE dbo.AddExtendedQueryTags (
     @extendedQueryTags dbo.AddExtendedQueryTagsInputTableType_1 READONLY,
-    @initStatus TINYINT,  --- 0 - Adding, 1 - Ready, 2 - Deleting
     @maxAllowedCount INT
 )
 AS
-
     SET NOCOUNT     ON
     SET XACT_ABORT  ON
 
@@ -1537,18 +1535,13 @@ AS
              THROW 50409, 'extended query tags exceed max allowed count', 1
 
         -- Check if tag with same path already exist
-        SELECT TagKey 
-        FROM dbo.ExtendedQueryTag WITH(HOLDLOCK) 
-        INNER JOIN @extendedQueryTags input 
-        ON input.TagPath = dbo.ExtendedQueryTag.TagPath 
-	    
-        IF @@ROWCOUNT <> 0
+        IF EXISTS(SELECT 1 FROM dbo.ExtendedQueryTag WITH(HOLDLOCK) INNER JOIN @extendedQueryTags input ON input.TagPath = dbo.ExtendedQueryTag.TagPath)
             THROW 50409, 'extended query tag(s) already exist', 2
 
-        -- add to extended query tag table with status 1(Ready)
+        -- add to extended query tag table with status 0 (Adding)
         INSERT INTO dbo.ExtendedQueryTag
             (TagKey, TagPath, TagPrivateCreator, TagVR, TagLevel, TagStatus)
-        SELECT NEXT VALUE FOR TagKeySequence, TagPath, TagPrivateCreator, TagVR, TagLevel, @initStatus FROM @extendedQueryTags
+        SELECT NEXT VALUE FOR TagKeySequence, TagPath, TagPrivateCreator, TagVR, TagLevel, 0 FROM @extendedQueryTags
 
         SELECT TagKey
         FROM @extendedQueryTags input
@@ -1575,7 +1568,8 @@ GO
 /***************************************************************************************/
 CREATE PROCEDURE dbo.DeleteExtendedQueryTag (
     @tagPath VARCHAR(64),
-    @dataType TINYINT
+    @dataType TINYINT,
+    @force BIT = 0
 )
 AS
 
@@ -1596,7 +1590,7 @@ AS
             THROW 50404, 'extended query tag not found', 1 
 
         -- check if status is Ready
-        IF @tagStatus <> 1
+        IF @force = 0 AND @tagStatus <> 1
             THROW 50412, 'extended query tag is not in Ready status', 1
 
         -- Update status to Deleting
