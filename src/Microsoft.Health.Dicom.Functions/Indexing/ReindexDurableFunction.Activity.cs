@@ -36,6 +36,22 @@ namespace Microsoft.Health.Dicom.Functions.Indexing
         /// <summary>
         ///  The activity to start reindex.
         /// </summary>
+        /// <param name="context">The input.</param>
+        /// <param name="log">The log.</param>
+        /// <returns>The reindex operation.</returns>
+        [FunctionName(nameof(GetCurrentSchemaVersionAsync))]
+        public async Task GetCurrentSchemaVersionAsync([ActivityTrigger] IDurableActivityContext context, ILogger log)
+        {
+            EnsureArg.IsNotNull(context, nameof(context));
+            EnsureArg.IsNotNull(log, nameof(log));
+            log.LogInformation("Get Current schema version");
+            _schemaInformation.Current = (int)(await _schemaVersionResolver.GetCurrentVersionAsync());
+            log.LogInformation($"Current schema version is {_schemaInformation.Current}");
+        }
+
+        /// <summary>
+        ///  The activity to start reindex.
+        /// </summary>
         /// <param name="input">The input.</param>
         /// <param name="log">The log.</param>
         /// <returns>The reindex operation.</returns>

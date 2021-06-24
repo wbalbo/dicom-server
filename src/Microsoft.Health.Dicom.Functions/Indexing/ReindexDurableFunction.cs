@@ -5,10 +5,11 @@
 
 using EnsureThat;
 using Microsoft.Extensions.Options;
-using Microsoft.Health.Dicom.Core.Features.ExtendedQueryTag;
 using Microsoft.Health.Dicom.Core.Features.Indexing;
 using Microsoft.Health.Dicom.Core.Features.Retrieve;
 using Microsoft.Health.Dicom.Functions.Indexing.Configuration;
+using Microsoft.Health.Dicom.SqlServer.Features.Schema;
+using Microsoft.Health.SqlServer.Features.Schema;
 
 namespace Microsoft.Health.Dicom.Functions.Indexing
 {
@@ -21,26 +22,30 @@ namespace Microsoft.Health.Dicom.Functions.Indexing
         private readonly ReindexConfiguration _reindexConfig;
         private readonly IReindexStateStore _reindexStore;
         private readonly IInstanceReindexer _instanceReindexer;
+        private readonly ISchemaVersionResolver _schemaVersionResolver;
         private readonly IInstanceStore _instanceStore;
-        private readonly IExtendedQueryTagStore _extendedQueryTagStore;
+        private readonly SchemaInformation _schemaInformation;
 
         public ReindexDurableFunction(
             IOptions<IndexingConfiguration> configOptions,
             IReindexStateStore reindexStore,
+            ISchemaVersionResolver schemaVersionResolver,
+            SchemaInformation schemaInformation,
             IInstanceStore instanceStore,
-            IInstanceReindexer instanceReindexer,
-            IExtendedQueryTagStore extendedQueryTagStore)
+            IInstanceReindexer instanceReindexer)
         {
             EnsureArg.IsNotNull(configOptions, nameof(configOptions));
             EnsureArg.IsNotNull(reindexStore, nameof(reindexStore));
             EnsureArg.IsNotNull(instanceReindexer, nameof(instanceReindexer));
+            EnsureArg.IsNotNull(schemaVersionResolver, nameof(schemaVersionResolver));
             EnsureArg.IsNotNull(instanceStore, nameof(instanceStore));
-            EnsureArg.IsNotNull(extendedQueryTagStore, nameof(extendedQueryTagStore));
+            EnsureArg.IsNotNull(schemaInformation, nameof(schemaInformation));
             _reindexConfig = configOptions.Value.Add;
             _reindexStore = reindexStore;
             _instanceReindexer = instanceReindexer;
+            _schemaVersionResolver = schemaVersionResolver;
             _instanceStore = instanceStore;
-            _extendedQueryTagStore = extendedQueryTagStore;
+            _schemaInformation = schemaInformation;
         }
     }
 }

@@ -4,11 +4,14 @@
 // -------------------------------------------------------------------------------------------------
 
 using System;
+using Dicom.Serialization;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Health.Dicom.Core.Modules;
 using Microsoft.Health.Dicom.Functions.Indexing.Configuration;
+using Microsoft.Health.Dicom.SqlServer.Features.Schema;
+using Microsoft.Health.SqlServer.Features.Schema;
 using Microsoft.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -29,9 +32,13 @@ namespace Microsoft.Health.Dicom.Functions
                 .Load(builder.Services);
 
             // TODO: JsonSerializer should be customized
-            builder.Services.AddSingleton(new JsonSerializer());
+            JsonSerializer jsonSerializer = new JsonSerializer();
+            jsonSerializer.Converters.Add(new JsonDicomConverter());
+            builder.Services.AddSingleton(jsonSerializer);
 
             builder.Services.AddSingleton(new RecyclableMemoryStreamManager());
+
+            builder.Services.AddSingleton(new SchemaInformation(SchemaVersionConstants.Min, SchemaVersionConstants.Max));
 
             builder.Services
                 .AddOptions<IndexingConfiguration>()

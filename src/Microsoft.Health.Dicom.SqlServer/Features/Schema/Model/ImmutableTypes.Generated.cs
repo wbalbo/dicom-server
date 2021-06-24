@@ -49,6 +49,36 @@ namespace Microsoft.Health.Dicom.SqlServer.Features.Schema.Model
         internal System.Byte TagLevel { get; }
     }
 
+    internal class GetInstanceByWatermarkTableTypeV1TableValuedParameterDefinition : TableValuedParameterDefinition<GetInstanceByWatermarkTableTypeV1Row>
+    {
+        internal GetInstanceByWatermarkTableTypeV1TableValuedParameterDefinition(System.String parameterName) : base(parameterName, "dbo.GetInstanceByWatermarkTableType_1")
+        {
+        }
+
+        internal readonly BigIntColumn StartWatermark = new BigIntColumn("StartWatermark");
+        internal readonly BigIntColumn EndWatermark = new BigIntColumn("EndWatermark");
+
+        protected override global::System.Collections.Generic.IEnumerable<Column> Columns => new Column[] { StartWatermark, EndWatermark };
+
+        protected override void FillSqlDataRecord(global::Microsoft.Data.SqlClient.Server.SqlDataRecord record, GetInstanceByWatermarkTableTypeV1Row rowData)
+        {
+            StartWatermark.Set(record, 0, rowData.StartWatermark);
+            EndWatermark.Set(record, 1, rowData.EndWatermark);
+        }
+    }
+
+    internal struct GetInstanceByWatermarkTableTypeV1Row
+    {
+        internal GetInstanceByWatermarkTableTypeV1Row(System.Int64 StartWatermark, System.Int64 EndWatermark)
+        {
+            this.StartWatermark = StartWatermark;
+            this.EndWatermark = EndWatermark;
+        }
+
+        internal System.Int64 StartWatermark { get; }
+        internal System.Int64 EndWatermark { get; }
+    }
+
     internal class InsertDateTimeExtendedQueryTagTableTypeV1TableValuedParameterDefinition : TableValuedParameterDefinition<InsertDateTimeExtendedQueryTagTableTypeV1Row>
     {
         internal InsertDateTimeExtendedQueryTagTableTypeV1TableValuedParameterDefinition(System.String parameterName) : base(parameterName, "dbo.InsertDateTimeExtendedQueryTagTableType_1")

@@ -22,17 +22,18 @@ namespace Microsoft.Health.Dicom.Core.Features.Indexing
     public class InstanceReindexer : IInstanceReindexer
     {
         private readonly IMetadataStore _metadataStore;
-        private readonly IIndexDataStore _indexDataStore;
+        private readonly IStoreFactory<IIndexDataStore> _indexDataStoreFactory;
 
-        public InstanceReindexer(IMetadataStore metadataStore, IIndexDataStore indexDataStore)
+        public InstanceReindexer(IMetadataStore metadataStore, IStoreFactory<IIndexDataStore> indexDataStoreFactory)
         {
             _metadataStore = EnsureArg.IsNotNull(metadataStore, nameof(metadataStore));
-            _indexDataStore = EnsureArg.IsNotNull(indexDataStore, nameof(indexDataStore));
+            _indexDataStoreFactory = EnsureArg.IsNotNull(indexDataStoreFactory, nameof(indexDataStoreFactory));
         }
         public async Task ReindexInstanceAsync(IReadOnlyCollection<ExtendedQueryTagStoreEntry> entries, VersionedInstanceIdentifier versionedInstanceId, CancellationToken cancellationToken)
         {
             DicomDataset dataset = await _metadataStore.GetInstanceMetadataAsync(versionedInstanceId, cancellationToken);
-            await _indexDataStore.ReindexInstanceAsync(dataset, entries.Select(x => new QueryTag(x)), cancellationToken);
+            await (await _indexDataStoreFactory.GetInstanceAsync(cancellationToken))
+                .ReindexInstanceAsync(dataset, entries.Select(x => new QueryTag(x)), cancellationToken);
         }
     }
 }

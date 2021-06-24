@@ -412,3 +412,34 @@ AS
 
     COMMIT TRANSACTION
 GO
+
+/***************************************************************************************/
+-- STORED PROCEDURE
+--     GetInstance
+--
+-- DESCRIPTION
+--     Gets valid dicom instances at study/series/instance level
+--
+-- PARAMETERS
+--     @invalidStatus
+--         * Filter criteria to search only valid instances
+/***************************************************************************************/
+CREATE PROCEDURE dbo.GetInstanceByWatermark (
+    @validStatus        TINYINT,
+    @startWatermark     BIGINT,
+    @endWatermark       BIGINT
+)
+AS
+BEGIN
+    SET NOCOUNT     ON
+    SET XACT_ABORT  ON
+
+    SELECT  StudyInstanceUid,
+            SeriesInstanceUid,
+            SopInstanceUid,
+            Watermark
+    FROM    dbo.Instance
+    WHERE   Watermark BETWEEN @startWatermark AND @endWatermark
+            AND Status              = @validStatus
+END
+GO

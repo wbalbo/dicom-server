@@ -624,6 +624,16 @@ CREATE TYPE  dbo.PrepareReindexingTableType_1 AS TABLE
 GO
 
 /*************************************************************
+    Table valued parameter to provide tag keys to PrepareReindexing
+*************************************************************/
+CREATE TYPE  dbo.GetInstanceByWatermarkTableType_1 AS TABLE
+(
+    StartWatermark                     BIGINT, -- StartWatermark
+    EndWatermark                       BIGINT -- EndWatermark
+)
+GO
+
+/*************************************************************
     Sequence for generating sequential unique ids
 **************************************************************/
 
@@ -1078,6 +1088,37 @@ BEGIN
             AND SopInstanceUid      = ISNULL(@sopInstanceUid, SopInstanceUid)
             AND Status              = @validStatus
 
+END
+GO
+
+/***************************************************************************************/
+-- STORED PROCEDURE
+--     GetInstance
+--
+-- DESCRIPTION
+--     Gets valid dicom instances at study/series/instance level
+--
+-- PARAMETERS
+--     @invalidStatus
+--         * Filter criteria to search only valid instances
+/***************************************************************************************/
+CREATE PROCEDURE dbo.GetInstanceByWatermark (
+    @validStatus        TINYINT,
+    @startWatermark     BIGINT,
+    @endWatermark       BIGINT
+)
+AS
+BEGIN
+    SET NOCOUNT     ON
+    SET XACT_ABORT  ON
+
+    SELECT  StudyInstanceUid,
+            SeriesInstanceUid,
+            SopInstanceUid,
+            Watermark
+    FROM    dbo.Instance
+    WHERE   Watermark BETWEEN @startWatermark AND @endWatermark
+            AND Status              = @validStatus
 END
 GO
 

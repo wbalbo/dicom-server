@@ -35,6 +35,7 @@ namespace Microsoft.Health.Dicom.SqlServer.Features.Schema.Model
         internal readonly static GetChangeFeedLatestProcedure GetChangeFeedLatest = new GetChangeFeedLatestProcedure();
         internal readonly static GetExtendedQueryTagProcedure GetExtendedQueryTag = new GetExtendedQueryTagProcedure();
         internal readonly static GetInstanceProcedure GetInstance = new GetInstanceProcedure();
+        internal readonly static GetInstanceByWatermarkProcedure GetInstanceByWatermark = new GetInstanceByWatermarkProcedure();
         internal readonly static GetReindexStateEntriesProcedure GetReindexStateEntries = new GetReindexStateEntriesProcedure();
         internal readonly static IncrementDeletedInstanceRetryProcedure IncrementDeletedInstanceRetry = new IncrementDeletedInstanceRetryProcedure();
         internal readonly static PrepareReindexingProcedure PrepareReindexing = new PrepareReindexingProcedure();
@@ -544,6 +545,26 @@ namespace Microsoft.Health.Dicom.SqlServer.Features.Schema.Model
                 _studyInstanceUid.AddParameter(command.Parameters, studyInstanceUid);
                 _seriesInstanceUid.AddParameter(command.Parameters, seriesInstanceUid);
                 _sopInstanceUid.AddParameter(command.Parameters, sopInstanceUid);
+            }
+        }
+
+        internal class GetInstanceByWatermarkProcedure : StoredProcedure
+        {
+            internal GetInstanceByWatermarkProcedure() : base("dbo.GetInstanceByWatermark")
+            {
+            }
+
+            private readonly ParameterDefinition<System.Byte> _validStatus = new ParameterDefinition<System.Byte>("@validStatus", global::System.Data.SqlDbType.TinyInt, false);
+            private readonly ParameterDefinition<System.Int64> _startWatermark = new ParameterDefinition<System.Int64>("@startWatermark", global::System.Data.SqlDbType.BigInt, false);
+            private readonly ParameterDefinition<System.Int64> _endWatermark = new ParameterDefinition<System.Int64>("@endWatermark", global::System.Data.SqlDbType.BigInt, false);
+
+            public void PopulateCommand(SqlCommandWrapper command, System.Byte validStatus, System.Int64 startWatermark, System.Int64 endWatermark)
+            {
+                command.CommandType = global::System.Data.CommandType.StoredProcedure;
+                command.CommandText = "dbo.GetInstanceByWatermark";
+                _validStatus.AddParameter(command.Parameters, validStatus);
+                _startWatermark.AddParameter(command.Parameters, startWatermark);
+                _endWatermark.AddParameter(command.Parameters, endWatermark);
             }
         }
 

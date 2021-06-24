@@ -36,9 +36,40 @@ namespace Microsoft.Health.Dicom.SqlServer.Features.Retrieve
             return GetInstanceIdentifierImp(studyInstanceUid, cancellationToken, seriesInstanceUid, sopInstanceUid);
         }
 
-        public Task<IEnumerable<VersionedInstanceIdentifier>> GetInstanceIdentifiersAsync((long Start, long End) watermarkRange, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<VersionedInstanceIdentifier>> GetInstanceIdentifiersAsync((long Start, long End) watermarkRange, CancellationToken cancellationToken = default)
         {
-            throw new System.NotImplementedException();
+            // TODO: should have multiple version of SqlInstanceStore 
+            var results = new List<VersionedInstanceIdentifier>();
+
+            using (SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken))
+            using (SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateSqlCommand())
+            {
+                VLatest.GetInstanceByWatermark.PopulateCommand(
+                    sqlCommandWrapper,
+                    validStatus: (byte)IndexStatus.Created,
+                    watermarkRange.Start,
+                    watermarkRange.End);
+
+                using (var reader = await sqlCommandWrapper.ExecuteReaderAsync(CommandBehavior.SequentialAccess, cancellationToken))
+                {
+                    while (await reader.ReadAsync(cancellationToken))
+                    {
+                        (string rStudyInstanceUid, string rSeriesInstanceUid, string rSopInstanceUid, long watermark) = reader.ReadRow(
+                           VLatest.Instance.StudyInstanceUid,
+                           VLatest.Instance.SeriesInstanceUid,
+                           VLatest.Instance.SopInstanceUid,
+                           VLatest.Instance.Watermark);
+
+                        results.Add(new VersionedInstanceIdentifier(
+                                rStudyInstanceUid,
+                                rSeriesInstanceUid,
+                                rSopInstanceUid,
+                                watermark));
+                    }
+                }
+            }
+
+            return results;
         }
 
         public Task<IEnumerable<VersionedInstanceIdentifier>> GetInstanceIdentifiersInSeriesAsync(
