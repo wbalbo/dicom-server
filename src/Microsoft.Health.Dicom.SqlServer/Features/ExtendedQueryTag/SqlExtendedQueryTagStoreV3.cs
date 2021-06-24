@@ -8,7 +8,6 @@ using System.Data;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using EnsureThat;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Microsoft.Health.Dicom.Core.Exceptions;
@@ -22,31 +21,33 @@ namespace Microsoft.Health.Dicom.SqlServer.Features.ExtendedQueryTag
 {
     internal class SqlExtendedQueryTagStoreV3 : SqlExtendedQueryTagStoreV2
     {
-        private readonly SqlConnectionWrapperFactory _sqlConnectionWrapperFactory;
-
         public SqlExtendedQueryTagStoreV3(
            SqlConnectionWrapperFactory sqlConnectionWrapperFactory,
            ILogger<SqlExtendedQueryTagStoreV3> logger)
             : base(sqlConnectionWrapperFactory, logger)
         {
-            EnsureArg.IsNotNull(sqlConnectionWrapperFactory, nameof(sqlConnectionWrapperFactory));
-            _sqlConnectionWrapperFactory = sqlConnectionWrapperFactory;
         }
 
         public override SchemaVersion Version => SchemaVersion.V3;
 
-        public override async Task AddExtendedQueryTagsAsync(IEnumerable<AddExtendedQueryTagEntry> extendedQueryTagEntries, ExtendedQueryTagStatus initStatus, int maxAllowedCount, CancellationToken cancellationToken)
+        public override async Task<IReadOnlyList<int>> AddExtendedQueryTagsAsync(IEnumerable<AddExtendedQueryTagEntry> extendedQueryTagEntries, int maxAllowedCount, CancellationToken cancellationToken)
         {
-            using (SqlConnectionWrapper sqlConnectionWrapper = await _sqlConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken))
+            using (SqlConnectionWrapper sqlConnectionWrapper = await ConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken))
             using (SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateSqlCommand())
             {
                 IEnumerable<AddExtendedQueryTagsInputTableTypeV1Row> rows = extendedQueryTagEntries.Select(ToAddExtendedQueryTagsInputTableTypeV1Row);
 
-                V3.AddExtendedQueryTags.PopulateCommand(sqlCommandWrapper, rows, maxAllowedCount);
+                V3.AddExtendedQueryTags.PopulateCommand(sqlCommandWrapper, maxAllowedCount, new V3.AddExtendedQueryTagsTableValuedParameters(rows));
 
                 try
                 {
                     await sqlCommandWrapper.ExecuteNonQueryAsync(cancellationToken);
+                    var allTags = (await GetExtendedQueryTagsAsync(path: null, cancellationToken: cancellationToken))
+                        .ToDictionary(x => x.Path, x => x.Key);
+
+                    return extendedQueryTagEntries
+                        .Select(x => allTags[x.Path])
+                        .ToList();
                 }
                 catch (SqlException ex)
                 {

@@ -43,13 +43,27 @@ namespace Microsoft.Health.Dicom.Api.Features.Routing
             _actionContextAccessor.ActionContext);
 
         /// <inheritdoc />
+        public Uri ResolveOperationStatusUri(string operationId)
+        {
+            EnsureArg.IsNotNull(operationId, nameof(operationId));
+
+            return RouteUri(
+                KnownRouteNames.OperationStatus,
+                new RouteValueDictionary
+                {
+                    { KnownActionParameterNames.OperationId, operationId },
+                });
+        }
+
+        /// <inheritdoc />
         public Uri ResolveRetrieveStudyUri(string studyInstanceUid)
         {
             EnsureArg.IsNotNull(studyInstanceUid, nameof(studyInstanceUid));
+            var hasVersion = _httpContextAccessor.HttpContext.Request.RouteValues.ContainsKey("version");
 
             return RouteUri(
-                KnownRouteNames.RetrieveStudy,
-                new RouteValueDictionary()
+                hasVersion ? KnownRouteNames.VersionedRetrieveStudy : KnownRouteNames.RetrieveStudy,
+                new RouteValueDictionary
                 {
                     { KnownActionParameterNames.StudyInstanceUid, studyInstanceUid },
                 });
@@ -59,10 +73,11 @@ namespace Microsoft.Health.Dicom.Api.Features.Routing
         public Uri ResolveRetrieveInstanceUri(InstanceIdentifier instanceIdentifier)
         {
             EnsureArg.IsNotNull(instanceIdentifier, nameof(instanceIdentifier));
+            var hasVersion = _httpContextAccessor.HttpContext.Request.RouteValues.ContainsKey("version");
 
             return RouteUri(
-                KnownRouteNames.RetrieveInstance,
-                new RouteValueDictionary()
+                hasVersion ? KnownRouteNames.VersionedRetrieveInstance : KnownRouteNames.RetrieveInstance,
+                new RouteValueDictionary
                 {
                     { KnownActionParameterNames.StudyInstanceUid, instanceIdentifier.StudyInstanceUid },
                     { KnownActionParameterNames.SeriesInstanceUid, instanceIdentifier.SeriesInstanceUid },

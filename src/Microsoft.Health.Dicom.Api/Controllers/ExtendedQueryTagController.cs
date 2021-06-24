@@ -4,6 +4,7 @@
 // -------------------------------------------------------------------------------------------------
 
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Threading.Tasks;
 using EnsureThat;
@@ -13,6 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Health.Api.Features.Audit;
+using Microsoft.Health.Dicom.Api.Extensions;
 using Microsoft.Health.Dicom.Api.Features.Filters;
 using Microsoft.Health.Dicom.Api.Features.Routing;
 using Microsoft.Health.Dicom.Core.Configs;
@@ -20,47 +22,59 @@ using Microsoft.Health.Dicom.Core.Exceptions;
 using Microsoft.Health.Dicom.Core.Extensions;
 using Microsoft.Health.Dicom.Core.Features.Audit;
 using Microsoft.Health.Dicom.Core.Features.ExtendedQueryTag;
+using Microsoft.Health.Dicom.Core.Features.Routing;
 using Microsoft.Health.Dicom.Core.Messages.ExtendedQueryTag;
 using DicomAudit = Microsoft.Health.Dicom.Api.Features.Audit;
 
 namespace Microsoft.Health.Dicom.Api.Controllers
 {
+    [ApiVersion("1.0-prerelease")]
     [ServiceFilter(typeof(DicomAudit.AuditLoggingFilterAttribute))]
     public class ExtendedQueryTagController : Controller
     {
         private readonly IMediator _mediator;
+        private readonly IUrlResolver _urlResolver;
         private readonly ILogger<ExtendedQueryTagController> _logger;
         private readonly bool _featureEnabled;
 
-        public ExtendedQueryTagController(IMediator mediator, ILogger<ExtendedQueryTagController> logger, IOptions<FeatureConfiguration> featureConfiguration)
+        public ExtendedQueryTagController(
+            IMediator mediator,
+            IUrlResolver urlResolver,
+            IOptions<FeatureConfiguration> featureConfiguration,
+            ILogger<ExtendedQueryTagController> logger)
         {
             EnsureArg.IsNotNull(mediator, nameof(mediator));
-            EnsureArg.IsNotNull(logger, nameof(logger));
+            EnsureArg.IsNotNull(urlResolver, nameof(urlResolver));
             EnsureArg.IsNotNull(featureConfiguration?.Value, nameof(featureConfiguration));
+            EnsureArg.IsNotNull(logger, nameof(logger));
 
             _mediator = mediator;
+            _urlResolver = urlResolver;
             _logger = logger;
             _featureEnabled = featureConfiguration.Value.EnableExtendedQueryTags;
         }
 
-        [BodyModelStateValidator]
-        [ProducesResponseType(typeof(JsonResult), (int)HttpStatusCode.Accepted)]
         [HttpPost]
+        [BodyModelStateValidator]
+        [ProducesResponseType(typeof(AddExtendedQueryTagResponse), (int)HttpStatusCode.Accepted)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [VersionedRoute(KnownRoutes.ExtendedQueryTagRoute)]
         [Route(KnownRoutes.ExtendedQueryTagRoute)]
         [AuditEventType(AuditEventSubType.AddExtendedQueryTag)]
-        public async Task<IActionResult> PostAsync([FromBody] IEnumerable<AddExtendedQueryTagEntry> extendedQueryTags)
+        public async Task<IActionResult> PostAsync([Required][FromBody] IReadOnlyCollection<AddExtendedQueryTagEntry> extendedQueryTags)
         {
             _logger.LogInformation("DICOM Web Add Extended Query Tag request received, with extendedQueryTags {extendedQueryTags}.", extendedQueryTags);
 
             EnsureFeatureIsEnabled();
             AddExtendedQueryTagResponse response = await _mediator.AddExtendedQueryTagsAsync(extendedQueryTags, HttpContext.RequestAborted);
 
-            return StatusCode(
-               (int)HttpStatusCode.Accepted, response);
+            Response.AddLocationHeader(_urlResolver.ResolveOperationStatusUri(response.OperationId));
+            return StatusCode((int)HttpStatusCode.Accepted, response);
         }
 
         [ProducesResponseType(typeof(JsonResult), (int)HttpStatusCode.NoContent)]
         [HttpDelete]
+        [VersionedRoute(KnownRoutes.DeleteExtendedQueryTagRoute)]
         [Route(KnownRoutes.DeleteExtendedQueryTagRoute)]
         [AuditEventType(AuditEventSubType.RemoveExtendedQueryTag)]
         public async Task<IActionResult> DeleteAsync(string tagPath)
@@ -83,6 +97,7 @@ namespace Microsoft.Health.Dicom.Api.Controllers
         [ProducesResponseType(typeof(JsonResult), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [HttpGet]
+        [VersionedRoute(KnownRoutes.ExtendedQueryTagRoute)]
         [Route(KnownRoutes.ExtendedQueryTagRoute)]
         [AuditEventType(AuditEventSubType.GetAllExtendedQueryTags)]
         public async Task<IActionResult> GetAllTagsAsync()
@@ -108,6 +123,7 @@ namespace Microsoft.Health.Dicom.Api.Controllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [HttpGet]
+        [VersionedRoute(KnownRoutes.GetExtendedQueryTagRoute)]
         [Route(KnownRoutes.GetExtendedQueryTagRoute)]
         [AuditEventType(AuditEventSubType.GetExtendedQueryTag)]
         public async Task<IActionResult> GetTagAsync(string tagPath)

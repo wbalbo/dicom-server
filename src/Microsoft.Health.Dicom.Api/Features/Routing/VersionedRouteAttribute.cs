@@ -3,17 +3,15 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
-namespace Microsoft.Health.Dicom.SqlServer.Features.Schema
+using Microsoft.AspNetCore.Mvc;
+
+namespace Microsoft.Health.Dicom.Api.Features.Routing
 {
-    /// <summary>
-    /// Enum to keep track of available SQL schema versions.
-    /// </summary>
-    public enum SchemaVersion
+    public sealed class VersionedRouteAttribute : RouteAttribute
     {
-        Unknown = 0,
-        V1 = 1,
-        V2 = 2,
-        V3 = 3,
-        V4 = 4,
+        public VersionedRouteAttribute(string template)
+            : base("v{version:apiVersion}/" + template)
+        {
+        }
     }
 }
