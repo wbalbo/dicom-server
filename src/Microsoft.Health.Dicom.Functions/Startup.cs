@@ -7,7 +7,10 @@ using System;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Health.Dicom.Core.Modules;
 using Microsoft.Health.Dicom.Functions.Indexing.Configuration;
+using Microsoft.IO;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
 [assembly: FunctionsStartup(typeof(Microsoft.Health.Dicom.Functions.Startup))]
@@ -22,6 +25,14 @@ namespace Microsoft.Health.Dicom.Functions
 
             IConfiguration config = builder.GetContext().Configuration.GetSection(AzureFunctionsJobHost.SectionName);
 
+            new ServiceModule(new Core.Configs.FeatureConfiguration() { EnableExtendedQueryTags = true })
+                .Load(builder.Services);
+
+            // TODO: JsonSerializer should be customized
+            builder.Services.AddSingleton(new JsonSerializer());
+
+            builder.Services.AddSingleton(new RecyclableMemoryStreamManager());
+
             builder.Services
                 .AddOptions<IndexingConfiguration>()
                 .Configure<IConfiguration>((sectionObj, config) => config
@@ -31,8 +42,14 @@ namespace Microsoft.Health.Dicom.Functions
 
             builder.Services
                 .AddSqlServer(config)
-                .AddForegroundSchemaVersionResolution()
-                .AddExtendedQueryTagStores();
+                .AddReindexStateStore()
+                .AddIndexDataStores()
+                .AddQueryStore()
+                .AddInstanceStore()
+                .AddChangeFeedStore()
+                .AddExtendedQueryTagStores()
+                .AddForegroundSchemaVersionResolution();
+
 
             builder.Services
                 .AddAzureBlobServiceClient(config)

@@ -11,6 +11,7 @@ using Microsoft.Health.Dicom.Core.Features.Store;
 using Microsoft.Health.Dicom.SqlServer.Features.ChangeFeed;
 using Microsoft.Health.Dicom.SqlServer.Features.Common;
 using Microsoft.Health.Dicom.SqlServer.Features.ExtendedQueryTag;
+using Microsoft.Health.Dicom.SqlServer.Features.Indexing;
 using Microsoft.Health.Dicom.SqlServer.Features.Query;
 using Microsoft.Health.Dicom.SqlServer.Features.Retrieve;
 using Microsoft.Health.Dicom.SqlServer.Features.Schema;
@@ -24,6 +25,17 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class SqlServiceBuilderExtensions
     {
+        public static ISqlServiceBuilder AddReindexStateStore(this ISqlServiceBuilder builder)
+        {
+            IServiceCollection services = EnsureArg.IsNotNull(builder?.Services, nameof(builder));
+
+            services.Add<SqlReindexStateStore>()
+                .Scoped()
+                .AsSelf()
+                .AsImplementedInterfaces();
+            return builder;
+        }
+
         public static ISqlServiceBuilder AddIndexDataStores(this ISqlServiceBuilder builder)
         {
             IServiceCollection services = EnsureArg.IsNotNull(builder?.Services, nameof(builder));

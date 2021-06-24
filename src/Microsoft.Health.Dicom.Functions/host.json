@@ -32,5 +32,10 @@
       "Factor": 2,
       "FastFirst": true
     }
+  },
+  "DicomWeb": {
+    "MetadataStore": {
+      "ContainerName": "metadatacontainer"
+    }
   }
 }

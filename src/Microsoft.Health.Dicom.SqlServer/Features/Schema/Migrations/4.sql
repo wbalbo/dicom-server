@@ -1676,7 +1676,7 @@ AS
             R.StartWatermark,
             R.EndWatermark
     FROM dbo.ExtendedQueryTag E
-    INNER JOIN dbo.ReindexStore R
+    INNER JOIN dbo.ReindexState R
     ON E.TagKey = R.TagKey and R.OperationId = @operationId
 GO
 
@@ -1704,9 +1704,9 @@ AS
 
         UPDATE dbo.ExtendedQueryTag SET TagStatus = 1
         WHERE TagKey IN
-        (SELECT TagKey FROM dbo.ReindexStore WHERE OperationId = @operationId)
+        (SELECT TagKey FROM dbo.ReindexState WHERE OperationId = @operationId)
 
-        DELETE FROM dbo.ReindexStore
+        DELETE FROM dbo.ReindexState
         WHERE OperationId = @operationId
     
     COMMIT TRANSACTION
