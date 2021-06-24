@@ -6,6 +6,7 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: "Development"
       ASPNETCORE_URLS: "https://+:8080"
+      DicomServer__Features__EnableExtendedQueryTags: "true"
       DicomServer__Security__Enabled: "false"
       DicomServer__Services__Operations__BaseAddress: "http://functions:80/api/"
       # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Password is only used for development.")]

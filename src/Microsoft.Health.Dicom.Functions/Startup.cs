@@ -8,6 +8,7 @@ using Dicom.Serialization;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Health.Dicom.Core.Modules;
 using Microsoft.Health.Dicom.Functions.Indexing.Configuration;
 using Microsoft.Health.Dicom.SqlServer.Features.Schema;
@@ -32,11 +33,11 @@ namespace Microsoft.Health.Dicom.Functions
                 .Load(builder.Services);
 
             // TODO: JsonSerializer should be customized
-            JsonSerializer jsonSerializer = new JsonSerializer();
+            var jsonSerializer = new JsonSerializer();
             jsonSerializer.Converters.Add(new JsonDicomConverter());
             builder.Services.AddSingleton(jsonSerializer);
 
-            builder.Services.AddSingleton(new RecyclableMemoryStreamManager());
+            builder.Services.TryAddSingleton<RecyclableMemoryStreamManager>();
 
             builder.Services.AddSingleton(new SchemaInformation(SchemaVersionConstants.Min, SchemaVersionConstants.Max));
 
@@ -49,14 +50,11 @@ namespace Microsoft.Health.Dicom.Functions
 
             builder.Services
                 .AddSqlServer(config)
+                .AddForegroundSchemaVersionResolution()
                 .AddReindexStateStore()
                 .AddIndexDataStores()
-                .AddQueryStore()
                 .AddInstanceStore()
-                .AddChangeFeedStore()
-                .AddExtendedQueryTagStores()
-                .AddForegroundSchemaVersionResolution();
-
+                .AddExtendedQueryTagStores();
 
             builder.Services
                 .AddAzureBlobServiceClient(config)
