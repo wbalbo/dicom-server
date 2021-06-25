@@ -8,7 +8,6 @@ using Dicom.Serialization;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Health.Dicom.Core.Modules;
 using Microsoft.Health.Dicom.Functions.Indexing.Configuration;
 using Microsoft.Health.Dicom.SqlServer.Features.Schema;
@@ -37,7 +36,7 @@ namespace Microsoft.Health.Dicom.Functions
             jsonSerializer.Converters.Add(new JsonDicomConverter());
             builder.Services.AddSingleton(jsonSerializer);
 
-            builder.Services.TryAddSingleton<RecyclableMemoryStreamManager>();
+            builder.Services.AddSingleton(new RecyclableMemoryStreamManager());
 
             builder.Services.AddSingleton(new SchemaInformation(SchemaVersionConstants.Min, SchemaVersionConstants.Max));
 

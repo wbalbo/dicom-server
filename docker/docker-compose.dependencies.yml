@@ -21,14 +21,18 @@ services:
     environment:
       # By default Azure Durable Functions will re-use the same connection string
       AzureWebJobsStorage: "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;QueueEndpoint=http://azurite:10001/devstoreaccount1;TableEndpoint=http://azurite:10002/devstoreaccount1;"
+      # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Password is only used for development.")]
+      AzureFunctionsJobHost__SqlServer__ConnectionString: "Server=tcp:sql,1433;Initial Catalog=DICOM;Persist Security Info=False;User ID=sa;Password=${SAPASSWORD};MultipleActiveResultSets=False;Connection Timeout=30;"
+      AzureFunctionsJobHost__BlobStore__ConnectionString: "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;"
     depends_on:
       - azurite
+      - sql
   azurite:
-    image: mcr.microsoft.com/azure-storage/azurite
-    ports:
-      - "10001:10001"
-      - "10000:10000"
-      - "10002:10002"
+    image: mcr.microsoft.com/azure-storage/azurite:3.13.0@sha256:349f106b240c5fd5ecb146c3aa121c531c8a1080badb762099d886703bc39fa0
+    # ports:
+    #   - "10001:10001"
+    #   - "10000:10000"
+    #   - "10002:10002"
   sql:
     build:
       context: ./..
@@ -41,5 +45,5 @@ services:
       interval: 10s
       timeout: 10s
       retries: 6
-    ports:
-      - "1433:1433"
+    # ports:
+    #   - "1433:1433"

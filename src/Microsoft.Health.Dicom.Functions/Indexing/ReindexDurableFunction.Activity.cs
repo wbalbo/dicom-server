@@ -36,22 +36,6 @@ namespace Microsoft.Health.Dicom.Functions.Indexing
         /// <summary>
         ///  The activity to start reindex.
         /// </summary>
-        /// <param name="context">The input.</param>
-        /// <param name="log">The log.</param>
-        /// <returns>The reindex operation.</returns>
-        [FunctionName(nameof(GetCurrentSchemaVersionAsync))]
-        public async Task GetCurrentSchemaVersionAsync([ActivityTrigger] IDurableActivityContext context, ILogger log)
-        {
-            EnsureArg.IsNotNull(context, nameof(context));
-            EnsureArg.IsNotNull(log, nameof(log));
-            log.LogInformation("Get Current schema version");
-            _schemaInformation.Current = (int)(await _schemaVersionResolver.GetCurrentVersionAsync());
-            log.LogInformation($"Current schema version is {_schemaInformation.Current}");
-        }
-
-        /// <summary>
-        ///  The activity to start reindex.
-        /// </summary>
         /// <param name="input">The input.</param>
         /// <param name="log">The log.</param>
         /// <returns>The reindex operation.</returns>
@@ -60,7 +44,7 @@ namespace Microsoft.Health.Dicom.Functions.Indexing
         {
             EnsureArg.IsNotNull(input, nameof(input));
             EnsureArg.IsNotNull(log, nameof(log));
-            log.LogInformation("Start reindex with {input}", input);
+            log.LogInformation("Start reindexing for the following tag keys: {input}", string.Join(", ", input.TagKeys));
             return await _reindexStore.PrepareReindexingAsync(input.TagKeys, input.OperationId);
         }
 
@@ -77,11 +61,16 @@ namespace Microsoft.Health.Dicom.Functions.Indexing
 
             log.LogInformation("Getting query tags which is being processed by operation {operationId}", operationId);
             var entries = await _reindexStore.GetReindexEntriesAsync(operationId);
+
             // only process tags which is on Processing
-            return entries
+            var results = entries
                 .Where(x => x.Status == IndexStatus.Processing)
                 .Select(y => y.StoreEntry)
                 .ToList();
+
+            log.LogInformation("Found the following tags: {Tags}", string.Join(", ", results.Select(x => x.Path)));
+
+            return results;
         }
 
         /// <summary>
@@ -96,7 +85,10 @@ namespace Microsoft.Health.Dicom.Functions.Indexing
             EnsureArg.IsNotNull(input, nameof(input));
             EnsureArg.IsNotNull(logger, nameof(logger));
 
-            logger.LogInformation("Reindex instances with {input}", input);
+            logger.LogInformation(
+                "Reindexing the following watermark range [{Start}, {End})",
+                input.WatermarkRange.Start,
+                input.WatermarkRange.End + 1);
 
             var instanceIdentifiers = await _instanceStore.GetInstanceIdentifiersAsync(input.WatermarkRange);
 

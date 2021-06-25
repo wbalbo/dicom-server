@@ -32,8 +32,6 @@ namespace Microsoft.Health.Dicom.Functions.Indexing
             logger = context.CreateReplaySafeLogger(logger);
             var tagKeys = context.GetInput<IReadOnlyList<int>>();
 
-            await context.CallActivityAsync(nameof(GetCurrentSchemaVersionAsync), null);
-
             ReindexOperation reindexOperation = await context.CallActivityAsync<ReindexOperation>(
                 nameof(PrepareReindexingTagsAsync),
                 new PrepareReindexingTagsInput { OperationId = context.InstanceId, TagKeys = tagKeys });

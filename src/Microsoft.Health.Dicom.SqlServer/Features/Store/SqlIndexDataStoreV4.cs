@@ -4,12 +4,12 @@
 // -------------------------------------------------------------------------------------------------
 
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Dicom;
 using EnsureThat;
+using Microsoft.Data.SqlClient;
 using Microsoft.Health.Dicom.Core.Exceptions;
 using Microsoft.Health.Dicom.Core.Features.ExtendedQueryTag;
 using Microsoft.Health.Dicom.SqlServer.Features.ExtendedQueryTag;
@@ -61,7 +61,6 @@ namespace Microsoft.Health.Dicom.SqlServer.Features.Store
                 }
                 catch (SqlException ex)
                 {
-
                     throw new DataStoreException(ex);
                 }
             }

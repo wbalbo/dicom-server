@@ -25,7 +25,6 @@
     }
   },
   "SqlServer": {
-    "ConnectionString": "server=(local);Initial Catalog=Dicom;Integrated Security=true",
     "TransientFaultRetryPolicy": {
       "InitialDelay": "00:00:00.100",
       "RetryCount": 3,

@@ -73,7 +73,7 @@ namespace Microsoft.Health.Dicom.Api.Controllers
         /// <exception cref="ArgumentNullException"><paramref name="operationId"/> is <see langword="null"/>.</exception>
         /// <exception cref="OperationCanceledException">The connection was aborted.</exception>
         [HttpGet]
-        [Route(KnownRoutes.OperationInstanceRoute)]
+        [Route(KnownRoutes.OperationInstanceRoute, Name = KnownRouteNames.OperationStatus)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         [ProducesResponseType(typeof(OperationStatusResponse), (int)HttpStatusCode.Accepted)]
