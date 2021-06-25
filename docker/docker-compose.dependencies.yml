@@ -24,7 +24,7 @@ services:
     depends_on:
       - azurite
   azurite:
-    image: mcr.microsoft.com/azure-storage/azurite
+    image: mcr.microsoft.com/azure-storage/azurite:3.13.0
   sql:
     build:
       context: ./..

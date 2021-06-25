@@ -6,8 +6,8 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: "Development"
       ASPNETCORE_URLS: "https://+:8080"
-      DicomServer__Security__Enabled: "false"
-      DicomServer__Services__Operations__BaseAddress: "http://functions:80/api/"
+      Functions__BaseAddress: "http://functions:80/api/"
+      DicomServer__Security__Enabled: "false"      
       # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Password is only used for development.")]
       SqlServer__ConnectionString: "Server=tcp:sql,1433;Initial Catalog=DICOM;Persist Security Info=False;User ID=sa;Password=${SAPASSWORD:-L0ca1P@ssw0rd};MultipleActiveResultSets=False;Connection Timeout=30;"
     user: root
@@ -20,6 +20,7 @@ services:
     environment:
       # This is typically set by Visual Studio automatically
       WEBSITE_HOSTNAME: "localhost:80"
+      SqlServer__ConnectionString: "Server=tcp:sql,1433;Initial Catalog=DICOM;Persist Security Info=False;User ID=sa;Password=${SAPASSWORD:-L0ca1P@ssw0rd};MultipleActiveResultSets=False;Connection Timeout=30;"
     ports:
       - "7072:80"
   sql:

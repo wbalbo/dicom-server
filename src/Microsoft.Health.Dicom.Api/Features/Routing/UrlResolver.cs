@@ -89,12 +89,8 @@ namespace Microsoft.Health.Dicom.Api.Features.Routing
         {
             HttpRequest request = _httpContextAccessor.HttpContext.Request;
 
-            return new Uri(
-                UrlHelper.RouteUrl(
-                    routeName,
-                    routeValues,
-                    request.Scheme,
-                    request.Host.Value));
+            string url = UrlHelper.RouteUrl(routeName, routeValues, request.Scheme, request.Host.Value);
+            return new Uri(url);
         }
     }
 }
