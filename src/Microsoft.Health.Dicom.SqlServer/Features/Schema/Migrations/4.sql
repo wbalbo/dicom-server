@@ -399,6 +399,23 @@ CREATE UNIQUE NONCLUSTERED INDEX IX_ExtendedQueryTag_TagPath ON dbo.ExtendedQuer
     TagPath
 )
 
+
+CREATE TABLE dbo.ExtendedQueryTagError (
+	TagKey                  INT                  NOT NULL, --PK
+	createdTime				DATETIME2(7)		 NOT NULL,
+	ErrorCode               TINYINT              NOT NULL,
+	studyInstanceUid        VARCHAR(64)          NOT NULL,
+	seriesInstanceUid       VARCHAR(64)			 NOT NULL,
+	sopInstanceUid			VARCHAR(64)			 NOT NULL,
+	sopInstanceKey			BIGINT				 NOT NULL,
+)
+
+CREATE UNIQUE CLUSTERED INDEX IXC_ExtendedQueryTagError ON dbo.ExtendedQueryTagError
+(
+	TagKey
+)
+
+
 /*************************************************************
     Extended Query Tag Operation Table
     Stores the association between tags and their reindexing operation
@@ -1530,6 +1547,40 @@ GO
 
 /***************************************************************************************/
 -- STORED PROCEDURE
+--     GetExtendedQueryTagErrors
+--
+-- DESCRIPTION
+--     Gets the extended query tag errors by tag path.
+--
+-- PARAMETERS
+--     @tagPath
+--         * The TagPath for the extended query tag for which we retrieve error(s).
+/***************************************************************************************/
+CREATE OR ALTER PROCEDURE dbo.GetExtendedQueryTagErrors (@tagPath VARCHAR(64))
+AS
+	SET NOCOUNT     ON
+	SET XACT_ABORT  ON
+	BEGIN TRANSACTION
+
+
+    DECLARE @tagKey INT        
+
+	SELECT @tagKey = TagKey
+	FROM dbo.ExtendedQueryTag WITH(XLOCK)
+	WHERE dbo.ExtendedQueryTag.TagPath = @tagPath
+
+	-- Check existence
+	IF (@@ROWCOUNT = 0)
+		THROW 50404, 'extended query tag not found', 1 
+	ELSE
+		SELECT * FROM dbo.ExtendedQueryTagError
+		WHERE TagKey = @tagKey
+
+	COMMIT TRANSACTION
+GO
+
+/***************************************************************************************/
+-- STORED PROCEDURE
 --     GetExtendedQueryTagsByOperation
 --
 -- DESCRIPTION
@@ -1628,6 +1679,7 @@ AS
 
     COMMIT TRANSACTION
 GO
+
 
 /***************************************************************************************/
 -- STORED PROCEDURE

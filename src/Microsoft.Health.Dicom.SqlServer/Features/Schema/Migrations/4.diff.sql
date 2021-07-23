@@ -1,5 +1,20 @@
 SET XACT_ABORT ON
 
+CREATE TABLE dbo.ExtendedQueryTagError (
+	TagKey                  INT                  NOT NULL, --PK
+	createdTime				DATETIME2(7)		 NOT NULL,
+	ErrorCode               TINYINT              NOT NULL,
+	studyInstanceUid        VARCHAR(64)          NOT NULL,
+	seriesInstanceUid       VARCHAR(64)			 NOT NULL,
+	sopInstanceUid			VARCHAR(64)			 NOT NULL,
+	sopInstanceKey			BIGINT				 NOT NULL,
+)
+
+CREATE UNIQUE CLUSTERED INDEX IXC_ExtendedQueryTagError ON dbo.ExtendedQueryTagError
+(
+	TagKey
+)
+
 BEGIN TRANSACTION
 
 /*************************************************************
@@ -45,7 +60,6 @@ BEGIN
     )
 END
 GO
-
 /*************************************************************
     The user defined type for stored procedures that consume extended query tag keys
 *************************************************************/

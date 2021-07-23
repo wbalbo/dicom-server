@@ -18,6 +18,7 @@ namespace Microsoft.Health.Dicom.SqlServer.Features.Schema.Model
         internal readonly static ExtendedQueryTagTable ExtendedQueryTag = new ExtendedQueryTagTable();
         internal readonly static ExtendedQueryTagDateTimeTable ExtendedQueryTagDateTime = new ExtendedQueryTagDateTimeTable();
         internal readonly static ExtendedQueryTagDoubleTable ExtendedQueryTagDouble = new ExtendedQueryTagDoubleTable();
+        internal readonly static ExtendedQueryTagErrorTable ExtendedQueryTagError = new ExtendedQueryTagErrorTable();
         internal readonly static ExtendedQueryTagLongTable ExtendedQueryTagLong = new ExtendedQueryTagLongTable();
         internal readonly static ExtendedQueryTagOperationTable ExtendedQueryTagOperation = new ExtendedQueryTagOperationTable();
         internal readonly static ExtendedQueryTagPersonNameTable ExtendedQueryTagPersonName = new ExtendedQueryTagPersonNameTable();
@@ -123,6 +124,22 @@ namespace Microsoft.Health.Dicom.SqlServer.Features.Schema.Model
             internal readonly NullableBigIntColumn InstanceKey = new NullableBigIntColumn("InstanceKey");
             internal readonly BigIntColumn Watermark = new BigIntColumn("Watermark");
             internal readonly Index IXC_ExtendedQueryTagDouble = new Index("IXC_ExtendedQueryTagDouble");
+        }
+
+        internal class ExtendedQueryTagErrorTable : Table
+        {
+            internal ExtendedQueryTagErrorTable() : base("dbo.ExtendedQueryTagError")
+            {
+            }
+
+            internal readonly IntColumn TagKey = new IntColumn("TagKey");
+            internal readonly DateTime2Column createdTime = new DateTime2Column("createdTime", 7);
+            internal readonly TinyIntColumn ErrorCode = new TinyIntColumn("ErrorCode");
+            internal readonly VarCharColumn studyInstanceUid = new VarCharColumn("studyInstanceUid", 64);
+            internal readonly VarCharColumn seriesInstanceUid = new VarCharColumn("seriesInstanceUid", 64);
+            internal readonly VarCharColumn sopInstanceUid = new VarCharColumn("sopInstanceUid", 64);
+            internal readonly BigIntColumn sopInstanceKey = new BigIntColumn("sopInstanceKey");
+            internal readonly Index IXC_ExtendedQueryTagError = new Index("IXC_ExtendedQueryTagError");
         }
 
         internal class ExtendedQueryTagLongTable : Table
@@ -627,6 +644,22 @@ namespace Microsoft.Health.Dicom.SqlServer.Features.Schema.Model
                 command.CommandType = global::System.Data.CommandType.StoredProcedure;
                 command.CommandText = "dbo.GetExtendedQueryTagsByOperation";
                 _operationId.AddParameter(command.Parameters, operationId);
+            }
+        }
+
+        internal class GetExtendedQueryTagErrorsProcedure : StoredProcedure
+        {
+            internal GetExtendedQueryTagErrorsProcedure() : base("dbo.GetExtendedQueryTagErrors")
+            {
+            }
+
+            private readonly ParameterDefinition<System.String> _tagPath = new ParameterDefinition<System.String>("@tagPath", global::System.Data.SqlDbType.VarChar, false, 64);
+
+            public void PopulateCommand(SqlCommandWrapper command, System.String tagPath)
+            {
+                command.CommandType = global::System.Data.CommandType.StoredProcedure;
+                command.CommandText = "dbo.GetExtendedQueryTagErrors";
+                _tagPath.AddParameter(command.Parameters, tagPath);
             }
         }
 
