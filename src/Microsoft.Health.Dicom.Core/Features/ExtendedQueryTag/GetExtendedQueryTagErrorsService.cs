@@ -22,14 +22,10 @@ namespace Microsoft.Health.Dicom.Core.Features.ExtendedQueryTag
         private readonly IDicomTagParser _dicomTagParser;
         public GetExtendedQueryTagErrorsService(IStoreFactory<IExtendedQueryTagStore> extendedQueryTagStoreFactory, IDicomTagParser dicomTagParser)
         {
-            EnsureArg.IsNotNull(extendedQueryTagStoreFactory, nameof(extendedQueryTagStoreFactory));
-            EnsureArg.IsNotNull(dicomTagParser, nameof(dicomTagParser));
-
-            _extendedQueryTagStoreFactory = extendedQueryTagStoreFactory;
-            _dicomTagParser = dicomTagParser;
+            _extendedQueryTagStoreFactory = EnsureArg.IsNotNull(extendedQueryTagStoreFactory, nameof(extendedQueryTagStoreFactory));
+            _dicomTagParser = EnsureArg.IsNotNull(dicomTagParser, nameof(dicomTagParser));
         }
 
-#pragma warning disable 1998
         public async Task<GetExtendedQueryTagErrorsResponse> GetExtendedQueryTagErrorsAsync(string tagPath, CancellationToken cancellationToken = default)
         {
             string numericalTagPath = null;
@@ -51,9 +47,7 @@ namespace Microsoft.Health.Dicom.Core.Features.ExtendedQueryTag
             IExtendedQueryTagStore extendedQueryTagStore = await _extendedQueryTagStoreFactory.GetInstanceAsync(cancellationToken);
             IReadOnlyList<ExtendedQueryTagError> extendedQueryTagErrors = await extendedQueryTagStore.GetExtendedQueryTagErrorsAsync(numericalTagPath, cancellationToken);
 
-
             return new GetExtendedQueryTagErrorsResponse(extendedQueryTagErrors);
         }
-#pragma warning restore 1998
     }
 }

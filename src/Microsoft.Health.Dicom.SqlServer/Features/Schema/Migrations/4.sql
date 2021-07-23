@@ -399,22 +399,47 @@ CREATE UNIQUE NONCLUSTERED INDEX IX_ExtendedQueryTag_TagPath ON dbo.ExtendedQuer
     TagPath
 )
 
-
-CREATE TABLE dbo.ExtendedQueryTagError (
-	TagKey                  INT                  NOT NULL, --PK
-	createdTime				DATETIME2(7)		 NOT NULL,
-	ErrorCode               TINYINT              NOT NULL,
-	studyInstanceUid        VARCHAR(64)          NOT NULL,
-	seriesInstanceUid       VARCHAR(64)			 NOT NULL,
-	sopInstanceUid			VARCHAR(64)			 NOT NULL,
-	sopInstanceKey			BIGINT				 NOT NULL,
-)
-
-CREATE UNIQUE CLUSTERED INDEX IXC_ExtendedQueryTagError ON dbo.ExtendedQueryTagError
-(
-	TagKey
-)
-
+/*************************************************************
+    Extended Query Tag Errors Table
+    Stores errors from Extended Query Tag operations
+	SopInstanceKey is Primary Key
+    TagKey is Foreign Key
+**************************************************************/
+IF NOT EXISTS (
+    SELECT * 
+    FROM sys.tables
+    WHERE name = 'ExtendedQueryTagError')
+BEGIN
+	CREATE TABLE dbo.ExtendedQueryTagError (
+		TagKey                  BIGINT               NOT NULL, --FK
+		CreatedTime				DATETIME2(7)		 NOT NULL,
+		ErrorCode               TINYINT              NOT NULL,
+		StudyInstanceUid        VARCHAR(64)          NOT NULL,
+		SeriesInstanceUid       VARCHAR(64)			 ,
+		SopInstanceUid			VARCHAR(64)			 ,
+		SopInstanceKey			BIGINT				 NOT NULL, --PK
+	)
+END
+IF NOT EXISTS (
+    SELECT * 
+	FROM sys.indexes 
+	WHERE name='IXC_ExtendedQueryTagError' AND object_id = OBJECT_ID('dbo.ExtendedQueryTagError'))
+BEGIN
+	CREATE UNIQUE CLUSTERED INDEX IXC_ExtendedQueryTagError_SopInstanceUid ON dbo.ExtendedQueryTagError
+	(
+		SopInstanceKey
+	)
+END
+IF NOT EXISTS (
+    SELECT * 
+	FROM sys.indexes 
+	WHERE name='IXC_ExtendedQueryTagError_TagKey' AND object_id = OBJECT_ID('dbo.ExtendedQueryTagError'))
+BEGIN
+    CREATE NONCLUSTERED INDEX IXC_ExtendedQueryTagError_TagKey ON dbo.ExtendedQueryTagError
+    (
+        TagKey
+	)
+END
 
 /*************************************************************
     Extended Query Tag Operation Table
@@ -1680,6 +1705,54 @@ AS
     COMMIT TRANSACTION
 GO
 
+/***************************************************************************************/
+-- STORED PROCEDURE
+--     AddExtendedQueryTagError
+--
+-- DESCRIPTION
+--    Add an Extended Query Tag Error
+--
+-- PARAMETERS
+--     @tagKey
+--         * The related extended query tag's key
+--     @createdTime
+--         * The time the error was created
+--     @errorCode
+--         * The error code
+--     @studyInstanceUid
+--         * study instance uid
+--     @seriesInstanceUid
+--         * series instance uid
+--     @sopInstanceUid
+--         * sop instance uid
+--     @sopInstanceKey
+--         * sop instance key
+/***************************************************************************************/
+
+CREATE OR ALTER PROCEDURE dbo.AddExtendedQueryTagError (
+	@tagKey INT,
+	@createdTime DATETIME2(7),
+	@errorCode INT,
+	@studyInstanceUid VARCHAR(64),
+	@seriesInstanceUid VARCHAR(64),
+	@sopInstanceUid VARCHAR(64),
+	@sopInstanceKey BIGINT
+)
+AS
+	SET NOCOUNT     ON
+	SET XACT_ABORT  ON
+	BEGIN TRANSACTION
+
+	-- Check if error with same @sopInstanceKey already exist
+	IF EXISTS (SELECT * FROM dbo.ExtendedQueryTagError WHERE sopInstanceKey = @sopInstanceKey)
+		THROW 50409, 'this extended query tag error already exist', 2
+
+	INSERT INTO dbo.ExtendedQueryTagError (TagKey, CreatedTime, ErrorCode, StudyInstanceUid, SeriesInstanceUid, SopInstanceUid, SopInstanceKey)
+	OUTPUT INSERTED.TagKey
+	VALUES (@tagKey, @createdTime, @errorCode, @studyInstanceUid, @seriesInstanceUid, @sopInstanceUid, @sopInstanceKey)
+
+	COMMIT TRANSACTION
+GO
 
 /***************************************************************************************/
 -- STORED PROCEDURE

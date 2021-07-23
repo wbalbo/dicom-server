@@ -170,6 +170,15 @@ namespace Microsoft.Health.Dicom.Core {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to This extended query tag error already exists..
+        /// </summary>
+        internal static string ExtendedQueryTagErrorAlreadyExists {
+            get {
+                return ResourceManager.GetString("ExtendedQueryTagErrorAlreadyExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Extended Query Tag feature is disabled..
         /// </summary>
         internal static string ExtendedQueryTagFeatureDisabled {

@@ -14,7 +14,7 @@ namespace Microsoft.Health.Dicom.Core.Features.ExtendedQueryTag
     public class ExtendedQueryTagError
     {
         public ExtendedQueryTagError(
-            DateTime timestamp,
+            DateTime createdTime,
             string studyInstanceUid,
             string seriesInstanceUid,
             string sopInstanceUid,
@@ -23,7 +23,7 @@ namespace Microsoft.Health.Dicom.Core.Features.ExtendedQueryTag
             StudyInstanceUid = EnsureArg.IsNotNullOrWhiteSpace(studyInstanceUid);
             SeriesInstanceUid = seriesInstanceUid;
             SopInstanceUid = sopInstanceUid;
-            UtcTimestamp = timestamp;
+            UtcCreatedTime = createdTime;
             ErrorMessage = EnsureArg.IsNotNullOrWhiteSpace(errorMessage);
         }
 
@@ -33,7 +33,7 @@ namespace Microsoft.Health.Dicom.Core.Features.ExtendedQueryTag
 
         public string SopInstanceUid { get; }
 
-        public DateTime UtcTimestamp { get; }
+        public DateTime UtcCreatedTime { get; }
 
         public string ErrorMessage { get; }
     }

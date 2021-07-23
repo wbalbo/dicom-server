@@ -173,5 +173,42 @@ namespace Microsoft.Health.Dicom.SqlServer.Features.ExtendedQueryTag
                 throw new DataStoreException(ex);
             }
         }
+
+        // returns Tag Key
+        public override async Task<int> AddExtendedQueryTagErrorAsync(
+            int tagKey,
+            DateTime createdTime,
+            int errorCode,
+            string studyInstanceUid,
+            string seriesInstanceUid,
+            string sopInstanceUid,
+            long sopInstanceKey,
+            CancellationToken cancellationToken = default)
+        {
+            using SqlConnectionWrapper sqlConnectionWrapper = await ConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken);
+            using SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateSqlCommand();
+            VLatest.AddExtendedQueryTagError.PopulateCommand(
+                sqlCommandWrapper,
+                tagKey,
+                createdTime,
+                errorCode,
+                studyInstanceUid,
+                seriesInstanceUid,
+                sopInstanceUid,
+                sopInstanceKey);
+            try
+            {
+                return (int)(await sqlCommandWrapper.ExecuteScalarAsync(cancellationToken));
+            }
+            catch (SqlException e)
+            {
+                if (e.Number == SqlErrorCodes.Conflict)
+                {
+                    throw new ExtendedQueryTagErrorAlreadyExistsException();
+                }
+
+                throw new DataStoreException(e);
+            }
+        }
     }
 }
