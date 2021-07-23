@@ -1,3 +1,4 @@
+
 -- Style guide: please see: https://github.com/ktaranov/sqlserver-kit/blob/master/SQL%20Server%20Name%20Convention%20and%20T-SQL%20Programming%20Style.md
 /*************************************************************
 Wrapping up in the multiple transactions except CREATE FULLTEXT INDEX which is non-transactional script.
@@ -2151,6 +2152,39 @@ AS
         WHERE TagStatus = 1
 
     COMMIT TRANSACTION
+GO
+
+/***************************************************************************************/
+-- STORED PROCEDURE
+--    DeleteExtendedQueryTagErrors
+--
+-- DESCRIPTION
+--    Delete errors for specified extended query tag
+--
+-- PARAMETERS
+--     @tagPath
+--         * The extended query tag path
+/***************************************************************************************/
+CREATE OR ALTER PROCEDURE dbo.DeleteExtendedQueryTagErrors (@tagPath VARCHAR(64))
+AS
+	SET NOCOUNT     ON
+	SET XACT_ABORT  ON
+	BEGIN TRANSACTION
+
+    DECLARE @tagKey INT        
+
+	SELECT @tagKey = TagKey
+	FROM dbo.ExtendedQueryTag WITH(XLOCK)
+	WHERE dbo.ExtendedQueryTag.TagPath = @tagPath
+
+	-- Check existence
+	IF (@@ROWCOUNT = 0)
+		THROW 50404, 'extended query tag not found', 1 
+	ELSE
+		DELETE FROM dbo.ExtendedQueryTagError
+		WHERE TagKey = @tagKey
+
+	COMMIT TRANSACTION
 GO
 
 /*************************************************************

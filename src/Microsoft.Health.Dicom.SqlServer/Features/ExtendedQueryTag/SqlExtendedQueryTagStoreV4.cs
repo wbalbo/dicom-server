@@ -210,5 +210,15 @@ namespace Microsoft.Health.Dicom.SqlServer.Features.ExtendedQueryTag
                 throw new DataStoreException(e);
             }
         }
+
+        public override async Task<bool> DeleteExtendedQueryTagErrorsAsync(string tagPath, CancellationToken cancellationToken = default)
+        {
+            using SqlConnectionWrapper sqlConnectionWrapper = await ConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken);
+            using SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateSqlCommand();
+
+            VLatest.DeleteExtendedQueryTagErrors.PopulateCommand(sqlCommandWrapper, tagPath);
+
+            return await sqlCommandWrapper.ExecuteNonQueryAsync(cancellationToken) != 0;
+        }
     }
 }

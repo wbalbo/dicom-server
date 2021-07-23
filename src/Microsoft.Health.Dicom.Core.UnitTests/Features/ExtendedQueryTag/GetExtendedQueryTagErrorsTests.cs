@@ -18,15 +18,15 @@ namespace Microsoft.Health.Dicom.Core.UnitTests.Features.ExtendedQueryTag
 {
     public class GetExtendedQueryTagErrorsTests
     {
-        private readonly IExtendedQueryTagStore _extendedQueryTagStore;
+        private readonly IExtendedQueryTagErrorStore _extendedQueryTagStore;
         private readonly IDicomTagParser _dicomTagParser;
         private readonly IGetExtendedQueryTagErrorsService _getExtendedQueryTagsService;
 
         public GetExtendedQueryTagErrorsTests()
         {
-            _extendedQueryTagStore = Substitute.For<IExtendedQueryTagStore>();
+            _extendedQueryTagStore = Substitute.For<IExtendedQueryTagErrorStore>();
             _dicomTagParser = Substitute.For<IDicomTagParser>();
-            var factory = Substitute.For<IStoreFactory<IExtendedQueryTagStore>>();
+            var factory = Substitute.For<IStoreFactory<IExtendedQueryTagErrorStore>>();
             factory.GetInstanceAsync(default).Returns(_extendedQueryTagStore);
             _getExtendedQueryTagsService = new GetExtendedQueryTagErrorsService(factory, _dicomTagParser);
         }

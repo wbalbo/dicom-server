@@ -73,5 +73,10 @@ namespace Microsoft.Health.Dicom.SqlServer.Features.ExtendedQueryTag
         {
             throw new BadRequestException(DicomSqlServerResource.SchemaVersionNeedsToBeUpgraded);
         }
+
+        public virtual Task<bool> DeleteExtendedQueryTagErrorsAsync(string tagPath, CancellationToken cancellationToken = default)
+        {
+            throw new BadRequestException(DicomSqlServerResource.SchemaVersionNeedsToBeUpgraded);
+        }
     }
 }
