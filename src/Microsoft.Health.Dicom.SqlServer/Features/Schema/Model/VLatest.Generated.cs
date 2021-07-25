@@ -38,6 +38,7 @@ namespace Microsoft.Health.Dicom.SqlServer.Features.Schema.Model
         internal readonly static GetChangeFeedProcedure GetChangeFeed = new GetChangeFeedProcedure();
         internal readonly static GetChangeFeedLatestProcedure GetChangeFeedLatest = new GetChangeFeedLatestProcedure();
         internal readonly static GetExtendedQueryTagProcedure GetExtendedQueryTag = new GetExtendedQueryTagProcedure();
+        internal readonly static GetExtendedQueryTagErrorsProcedure GetExtendedQueryTagErrors = new GetExtendedQueryTagErrorsProcedure();
         internal readonly static GetExtendedQueryTagsByOperationProcedure GetExtendedQueryTagsByOperation = new GetExtendedQueryTagsByOperationProcedure();
         internal readonly static GetInstanceProcedure GetInstance = new GetInstanceProcedure();
         internal readonly static GetInstancesByWatermarkRangeProcedure GetInstancesByWatermarkRange = new GetInstancesByWatermarkRangeProcedure();
@@ -678,22 +679,6 @@ namespace Microsoft.Health.Dicom.SqlServer.Features.Schema.Model
             }
         }
 
-        internal class GetExtendedQueryTagsByOperationProcedure : StoredProcedure
-        {
-            internal GetExtendedQueryTagsByOperationProcedure() : base("dbo.GetExtendedQueryTagsByOperation")
-            {
-            }
-
-            private readonly ParameterDefinition<System.String> _operationId = new ParameterDefinition<System.String>("@operationId", global::System.Data.SqlDbType.VarChar, false, 32);
-
-            public void PopulateCommand(SqlCommandWrapper command, System.String operationId)
-            {
-                command.CommandType = global::System.Data.CommandType.StoredProcedure;
-                command.CommandText = "dbo.GetExtendedQueryTagsByOperation";
-                _operationId.AddParameter(command.Parameters, operationId);
-            }
-        }
-
         internal class GetExtendedQueryTagErrorsProcedure : StoredProcedure
         {
             internal GetExtendedQueryTagErrorsProcedure() : base("dbo.GetExtendedQueryTagErrors")
@@ -707,6 +692,22 @@ namespace Microsoft.Health.Dicom.SqlServer.Features.Schema.Model
                 command.CommandType = global::System.Data.CommandType.StoredProcedure;
                 command.CommandText = "dbo.GetExtendedQueryTagErrors";
                 _tagPath.AddParameter(command.Parameters, tagPath);
+            }
+        }
+
+        internal class GetExtendedQueryTagsByOperationProcedure : StoredProcedure
+        {
+            internal GetExtendedQueryTagsByOperationProcedure() : base("dbo.GetExtendedQueryTagsByOperation")
+            {
+            }
+
+            private readonly ParameterDefinition<System.String> _operationId = new ParameterDefinition<System.String>("@operationId", global::System.Data.SqlDbType.VarChar, false, 32);
+
+            public void PopulateCommand(SqlCommandWrapper command, System.String operationId)
+            {
+                command.CommandType = global::System.Data.CommandType.StoredProcedure;
+                command.CommandText = "dbo.GetExtendedQueryTagsByOperation";
+                _operationId.AddParameter(command.Parameters, operationId);
             }
         }
 

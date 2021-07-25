@@ -174,6 +174,38 @@ namespace Microsoft.Health.Dicom.SqlServer.Features.ExtendedQueryTag
             }
         }
 
+        public override async Task<IReadOnlyList<ExtendedQueryTagError>> GetExtendedQueryTagErrorsAsync(string tagPath, CancellationToken cancellationToken = default)
+        {
+            List<ExtendedQueryTagError> results = new List<ExtendedQueryTagError>();
+
+            using SqlConnectionWrapper sqlConnectionWrapper = await ConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken);
+            using SqlCommandWrapper sqlCommandWrapper = sqlConnectionWrapper.CreateSqlCommand();
+
+            //VLatest.GetExtendedQueryTagErrors.PopulateCommand(sqlCommandWrapper, tagPath);
+
+            using SqlDataReader reader = await sqlCommandWrapper.ExecuteReaderAsync(CommandBehavior.SequentialAccess, cancellationToken);
+            while (await reader.ReadAsync(cancellationToken))
+            {
+                (int tagkey, DateTime timestamp, int errorCode, string studyInstanceUid, string seriesInstanceUid, string sopInstanceUid, long sopinstanceKey) = reader.ReadRow(
+                    VLatest.ExtendedQueryTagError.TagKey,
+                    VLatest.ExtendedQueryTagError.CreatedTime,
+                    VLatest.ExtendedQueryTagError.ErrorCode,
+                    VLatest.ExtendedQueryTagError.StudyInstanceUid,
+                    VLatest.ExtendedQueryTagError.SeriesInstanceUid,
+                    VLatest.ExtendedQueryTagError.SopInstanceUid,
+                    VLatest.ExtendedQueryTagError.SopInstanceKey
+                    );
+
+                //TODO: build the error message here
+                string errorMessage = "error" + errorCode;
+
+                results.Add(new ExtendedQueryTagError(timestamp, studyInstanceUid, seriesInstanceUid, sopInstanceUid,
+                    errorMessage));
+            }
+
+            return results;
+        }
+
         // returns Tag Key
         public override async Task<int> AddExtendedQueryTagErrorAsync(
             int tagKey,
