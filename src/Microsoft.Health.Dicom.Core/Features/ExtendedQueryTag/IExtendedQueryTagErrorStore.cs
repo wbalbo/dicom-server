@@ -39,7 +39,7 @@ namespace Microsoft.Health.Dicom.Core.Features.ExtendedQueryTag
             string studyInstanceUid,
             string seriesInstanceUid,
             string sopInstanceUid,
-            long sopInstanceKey,
+            Int64 sopInstanceKey,
             CancellationToken cancellationToken = default);
 
         /// <summary>

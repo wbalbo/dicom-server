@@ -412,19 +412,19 @@ IF NOT EXISTS (
     WHERE name = 'ExtendedQueryTagError')
 BEGIN
 	CREATE TABLE dbo.ExtendedQueryTagError (
-		TagKey                  BIGINT               NOT NULL, --FK
-		CreatedTime				DATETIME2(7)		 NOT NULL,
-		ErrorCode               TINYINT              NOT NULL,
-		StudyInstanceUid        VARCHAR(64)          NOT NULL,
-		SeriesInstanceUid       VARCHAR(64)			 ,
-		SopInstanceUid			VARCHAR(64)			 ,
-		SopInstanceKey			BIGINT				 NOT NULL, --PK
+		TagKey                  INT				NOT NULL, --FK
+		CreatedTime				DATETIME2(7)	NOT NULL,
+		ErrorCode               INT				NOT NULL,
+		StudyInstanceUid        VARCHAR(64)		NOT NULL,
+		SeriesInstanceUid       VARCHAR(64)		NULL,
+		SopInstanceUid			VARCHAR(64)		NULL,
+		SopInstanceKey			BIGINT			NOT NULL, --PK
 	)
 END
 IF NOT EXISTS (
     SELECT * 
 	FROM sys.indexes 
-	WHERE name='IXC_ExtendedQueryTagError' AND object_id = OBJECT_ID('dbo.ExtendedQueryTagError'))
+	WHERE name='IXC_ExtendedQueryTagError_SopInstanceUid' AND object_id = OBJECT_ID('dbo.ExtendedQueryTagError'))
 BEGIN
 	CREATE UNIQUE CLUSTERED INDEX IXC_ExtendedQueryTagError_SopInstanceUid ON dbo.ExtendedQueryTagError
 	(
@@ -1735,8 +1735,8 @@ CREATE OR ALTER PROCEDURE dbo.AddExtendedQueryTagError (
 	@createdTime DATETIME2(7),
 	@errorCode INT,
 	@studyInstanceUid VARCHAR(64),
-	@seriesInstanceUid VARCHAR(64),
-	@sopInstanceUid VARCHAR(64),
+	@seriesInstanceUid VARCHAR(64) = NULL,
+	@sopInstanceUid VARCHAR(64) = NULL,
 	@sopInstanceKey BIGINT
 )
 AS
@@ -1744,6 +1744,9 @@ AS
 	SET XACT_ABORT  ON
 	BEGIN TRANSACTION
 
+	-- Check if tag exists
+	IF NOT EXISTS (SELECT * FROM dbo.ExtendedQueryTag WHERE TagKey = @tagKey)
+		THROW 50404, 'Tag does not exist', 1;
 	-- Check if error with same @sopInstanceKey already exist
 	IF EXISTS (SELECT * FROM dbo.ExtendedQueryTagError WHERE sopInstanceKey = @sopInstanceKey)
 		THROW 50409, 'this extended query tag error already exist', 2

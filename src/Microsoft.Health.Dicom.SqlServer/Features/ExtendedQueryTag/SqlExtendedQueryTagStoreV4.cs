@@ -182,7 +182,7 @@ namespace Microsoft.Health.Dicom.SqlServer.Features.ExtendedQueryTag
             string studyInstanceUid,
             string seriesInstanceUid,
             string sopInstanceUid,
-            long sopInstanceKey,
+            Int64 sopInstanceKey,
             CancellationToken cancellationToken = default)
         {
             using SqlConnectionWrapper sqlConnectionWrapper = await ConnectionWrapperFactory.ObtainSqlConnectionWrapperAsync(cancellationToken);
@@ -198,13 +198,16 @@ namespace Microsoft.Health.Dicom.SqlServer.Features.ExtendedQueryTag
                 sopInstanceKey);
             try
             {
-                return (int)(await sqlCommandWrapper.ExecuteScalarAsync(cancellationToken));
+                return (int)await sqlCommandWrapper.ExecuteScalarAsync(cancellationToken);
             }
             catch (SqlException e)
             {
-                if (e.Number == SqlErrorCodes.Conflict)
+                switch (e.Number)
                 {
-                    throw new ExtendedQueryTagErrorAlreadyExistsException();
+                    case SqlErrorCodes.Conflict:
+                        throw new ExtendedQueryTagErrorAlreadyExistsException();
+                    case SqlErrorCodes.NotFound:
+                        throw new ExtendedQueryTagNotFoundException("Attempted to add error on non existing query tag.");
                 }
 
                 throw new DataStoreException(e);

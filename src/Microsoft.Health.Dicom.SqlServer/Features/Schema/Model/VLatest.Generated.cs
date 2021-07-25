@@ -134,12 +134,12 @@ namespace Microsoft.Health.Dicom.SqlServer.Features.Schema.Model
             {
             }
 
-            internal readonly BigIntColumn TagKey = new BigIntColumn("TagKey");
+            internal readonly IntColumn TagKey = new IntColumn("TagKey");
             internal readonly DateTime2Column CreatedTime = new DateTime2Column("CreatedTime", 7);
-            internal readonly TinyIntColumn ErrorCode = new TinyIntColumn("ErrorCode");
+            internal readonly IntColumn ErrorCode = new IntColumn("ErrorCode");
             internal readonly VarCharColumn StudyInstanceUid = new VarCharColumn("StudyInstanceUid", 64);
-            internal readonly VarCharColumn SeriesInstanceUid = new VarCharColumn("SeriesInstanceUid", 64);
-            internal readonly VarCharColumn SopInstanceUid = new VarCharColumn("SopInstanceUid", 64);
+            internal readonly NullableVarCharColumn SeriesInstanceUid = new NullableVarCharColumn("SeriesInstanceUid", 64);
+            internal readonly NullableVarCharColumn SopInstanceUid = new NullableVarCharColumn("SopInstanceUid", 64);
             internal readonly BigIntColumn SopInstanceKey = new BigIntColumn("SopInstanceKey");
             internal readonly Index IXC_ExtendedQueryTagError_SopInstanceUid = new Index("IXC_ExtendedQueryTagError_SopInstanceUid");
             internal readonly Index IXC_ExtendedQueryTagError_TagKey = new Index("IXC_ExtendedQueryTagError_TagKey");
@@ -289,8 +289,8 @@ namespace Microsoft.Health.Dicom.SqlServer.Features.Schema.Model
             private readonly ParameterDefinition<System.DateTime> _createdTime = new ParameterDefinition<System.DateTime>("@createdTime", global::System.Data.SqlDbType.DateTime2, false, 7);
             private readonly ParameterDefinition<System.Int32> _errorCode = new ParameterDefinition<System.Int32>("@errorCode", global::System.Data.SqlDbType.Int, false);
             private readonly ParameterDefinition<System.String> _studyInstanceUid = new ParameterDefinition<System.String>("@studyInstanceUid", global::System.Data.SqlDbType.VarChar, false, 64);
-            private readonly ParameterDefinition<System.String> _seriesInstanceUid = new ParameterDefinition<System.String>("@seriesInstanceUid", global::System.Data.SqlDbType.VarChar, false, 64);
-            private readonly ParameterDefinition<System.String> _sopInstanceUid = new ParameterDefinition<System.String>("@sopInstanceUid", global::System.Data.SqlDbType.VarChar, false, 64);
+            private readonly ParameterDefinition<System.String> _seriesInstanceUid = new ParameterDefinition<System.String>("@seriesInstanceUid", global::System.Data.SqlDbType.VarChar, true, 64);
+            private readonly ParameterDefinition<System.String> _sopInstanceUid = new ParameterDefinition<System.String>("@sopInstanceUid", global::System.Data.SqlDbType.VarChar, true, 64);
             private readonly ParameterDefinition<System.Int64> _sopInstanceKey = new ParameterDefinition<System.Int64>("@sopInstanceKey", global::System.Data.SqlDbType.BigInt, false);
 
             public void PopulateCommand(SqlCommandWrapper command, System.Int32 tagKey, System.DateTime createdTime, System.Int32 errorCode, System.String studyInstanceUid, System.String seriesInstanceUid, System.String sopInstanceUid, System.Int64 sopInstanceKey)

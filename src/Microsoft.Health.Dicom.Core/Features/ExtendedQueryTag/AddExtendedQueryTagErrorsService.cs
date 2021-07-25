@@ -20,7 +20,7 @@ namespace Microsoft.Health.Dicom.Core.Features.ExtendedQueryTag
             _extendedQueryTagStoreFactory = EnsureArg.IsNotNull(extendedQueryTagStoreFactory, nameof(extendedQueryTagStoreFactory));
         }
 
-        public async Task<int> AddExtendedQueryTagErrorAsync(int tagKey, DateTime createdTime, int errorCode, string studyInstanceUid, string seriesInstanceUid, string sopInstanceUid, long sopInstanceKey, CancellationToken cancellationToken = default)
+        public async Task<long> AddExtendedQueryTagErrorAsync(int tagKey, DateTime createdTime, int errorCode, string studyInstanceUid, string seriesInstanceUid, string sopInstanceUid, Int64 sopInstanceKey, CancellationToken cancellationToken = default)
         {
             IExtendedQueryTagErrorStore extendedQueryTagStore = await _extendedQueryTagStoreFactory.GetInstanceAsync(cancellationToken);
 

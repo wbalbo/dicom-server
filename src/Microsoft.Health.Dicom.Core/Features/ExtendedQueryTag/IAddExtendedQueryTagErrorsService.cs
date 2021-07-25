@@ -23,14 +23,14 @@ namespace Microsoft.Health.Dicom.Core.Features.ExtendedQueryTag
         /// <param name="sopInstanceKey">Sop instance key.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The tag key.</returns>
-        public Task<int> AddExtendedQueryTagErrorAsync(
+        public Task<Int64> AddExtendedQueryTagErrorAsync(
             int tagKey,
             DateTime createdTime,
             int errorCode,
             string studyInstanceUid,
             string seriesInstanceUid,
             string sopInstanceUid,
-            long sopInstanceKey,
+            Int64 sopInstanceKey,
             CancellationToken cancellationToken = default);
     }
 }
