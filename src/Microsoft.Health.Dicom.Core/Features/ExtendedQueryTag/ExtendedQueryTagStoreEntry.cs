@@ -3,6 +3,8 @@
 // Licensed under the MIT License (MIT). See LICENSE in the repo root for license information.
 // -------------------------------------------------------------------------------------------------
 
+using EnsureThat;
+
 namespace Microsoft.Health.Dicom.Core.Features.ExtendedQueryTag
 {
     /// <summary>
@@ -10,14 +12,17 @@ namespace Microsoft.Health.Dicom.Core.Features.ExtendedQueryTag
     /// </summary>
     public class ExtendedQueryTagStoreEntry : ExtendedQueryTagEntry
     {
-        public ExtendedQueryTagStoreEntry(int key, string path, string vr, string privateCreator, QueryTagLevel level, ExtendedQueryTagStatus status)
+        // TODO: why all properties has Set?
+        public ExtendedQueryTagStoreEntry(int key, string path, string vr, string privateCreator, QueryTagLevel level, ExtendedQueryTagStatus status, ExtendedQueryTagVersion version)
         {
+
             Key = key;
-            Path = path;
-            VR = vr;
+            Path = EnsureArg.IsNotNullOrWhiteSpace(path, nameof(path));
+            VR = EnsureArg.IsNotNullOrWhiteSpace(vr, nameof(vr));
             PrivateCreator = privateCreator;
             Level = level;
             Status = status;
+            Version = EnsureArg.IsNotNull(version, nameof(version));
         }
 
         /// <summary>
@@ -34,6 +39,8 @@ namespace Microsoft.Health.Dicom.Core.Features.ExtendedQueryTag
         /// Level of this tag. Could be Study, Series or Instance.
         /// </summary>
         public QueryTagLevel Level { get; set; }
+
+        public ExtendedQueryTagVersion Version { get; set; }
 
         /// <summary>
         /// Convert to  <see cref="GetExtendedQueryTagEntry"/>.

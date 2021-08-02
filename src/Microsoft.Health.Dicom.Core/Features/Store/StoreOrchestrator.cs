@@ -59,7 +59,8 @@ namespace Microsoft.Health.Dicom.Core.Features.Store
 
             DicomDataset dicomDataset = await dicomInstanceEntry.GetDicomDatasetAsync(cancellationToken);
             var queryTags = await _queryTagService.GetQueryTagsAsync(cancellationToken);
-            long version = await _indexDataStore.CreateInstanceIndexAsync(dicomDataset, queryTags, cancellationToken);
+            var tagVersion = ExtendedQueryTagVersion.GetVersion(queryTags);
+            long version = await _indexDataStore.CreateInstanceIndexAsync(dicomDataset, queryTags, tagVersion, cancellationToken);
 
             var versionedInstanceIdentifier = dicomDataset.ToVersionedInstanceIdentifier(version);
 

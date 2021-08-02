@@ -378,7 +378,8 @@ CREATE NONCLUSTERED INDEX IX_ChangeFeed_StudyInstanceUid_SeriesInstanceUid_SopIn
     TagPath is represented without any delimiters and each level takes 8 bytes
     TagLevel can be 0, 1 or 2 to represent Instance, Series or Study level
     TagPrivateCreator is identification code of private tag implementer, only apply to private tag.
-    TagStatus can be 0, 1 or 2 to represent Adding, Ready or Deleting    
+    TagStatus can be 0, 1 or 2 to represent Adding, Ready or Deleting
+    TagVersion is version of the tag.
 **************************************************************/
 CREATE TABLE dbo.ExtendedQueryTag (
     TagKey                  INT                  NOT NULL, --PK
@@ -386,7 +387,8 @@ CREATE TABLE dbo.ExtendedQueryTag (
     TagVR                   VARCHAR(2)           NOT NULL,
     TagPrivateCreator       NVARCHAR(64)         NULL, 
     TagLevel                TINYINT              NOT NULL,
-    TagStatus               TINYINT              NOT NULL
+    TagStatus               TINYINT              NOT NULL,
+    TagVersion              ROWVERSION           NOT NULL,
 )
 
 CREATE UNIQUE CLUSTERED INDEX IXC_ExtendedQueryTag ON dbo.ExtendedQueryTag
@@ -739,7 +741,8 @@ CREATE OR ALTER PROCEDURE dbo.AddInstance
     @doubleExtendedQueryTags dbo.InsertDoubleExtendedQueryTagTableType_1 READONLY,
     @dateTimeExtendedQueryTags dbo.InsertDateTimeExtendedQueryTagTableType_1 READONLY,
     @personNameExtendedQueryTags dbo.InsertPersonNameExtendedQueryTagTableType_1 READONLY,
-    @initialStatus                      TINYINT
+    @initialStatus                      TINYINT,
+    @extendedQueryTagETag               TIMESTAMP = NULL
 AS
     SET NOCOUNT ON
 
@@ -753,6 +756,9 @@ AS
     DECLARE @seriesKey BIGINT
     DECLARE @instanceKey BIGINT
 
+    IF @extendedQueryTagVersion <> (SELECT MAX(TagVersion) FROM dbo.ExtendedQueryTag)
+        THROW 50409, 'ETag does not match', 10
+
     SELECT @existingStatus = Status
     FROM dbo.Instance
     WHERE StudyInstanceUid = @studyInstanceUid
@@ -760,8 +766,8 @@ AS
         AND SopInstanceUid = @sopInstanceUid
 
     IF @@ROWCOUNT <> 0    
-        -- The instance already exists. Set the state = @existingStatus to indicate what state it is in.
-        THROW 50409, 'Instance already exists', @existingStatus;    
+        -- The instance already exists.
+        THROW 50409, 'Instance already exists', @existingStatus    
 
     -- The instance does not exist, insert it.
     SET @newWatermark = NEXT VALUE FOR dbo.WatermarkSequence
