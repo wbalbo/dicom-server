@@ -57,11 +57,22 @@ stages:
         analyzePackages: false
 
 - stage: DeployTestEnvironment
-  displayName: 'Deploy Test Environment'
+  displayName: 'Deploy Test Environment 1'
   dependsOn:
   - BuildRunUnitTests
   jobs:
   - template: deploy.yml
+    parameters:
+        profile: "default"
+
+- stage: DeployTestEnvironment
+  displayName: 'Deploy Test Environment 2'
+  dependsOn:
+  - BuildRunUnitTests
+  jobs:
+  - template: deploy.yml
+    parameters:
+        profile: "disabletag"
 
 - stage: ValidateAPIVersioning
   displayName: 'Detect Breaking Changes in REST API'

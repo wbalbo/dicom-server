@@ -1,3 +1,8 @@
+parameters:
+  -name: 'profile'
+   type: string
+   default: "default"
+
 jobs:
 - job: provision
   pool:
@@ -10,7 +15,7 @@ jobs:
       azurePowerShellVersion: latestVersion
       ScriptType: InlineScript
       Inline: |
-        New-AzResourceGroup -Name "$(resourceGroupName)" -Location "$(resourceGroupRegion)" -Force
+        New-AzResourceGroup -Name "$(resourceGroupName)${{parameters.profile}}" -Location "$(resourceGroupRegion)" -Force
 
   - template: add-aad-test-environment.yml
 
@@ -31,20 +36,20 @@ jobs:
         }
 
         $templateParameters = @{
-            appServicePlanResourceGroup = "$(appServicePlanResourceGroup)"
-            appServicePlanName = "$(appServicePlanName)"
-            serviceName = "$(deploymentName)"
-            functionAppName = "$(deploymentName)-functions"
+            appServicePlanResourceGroup = "$(appServicePlanResourceGroup)${{parameters.profile}}"
+            appServicePlanName = "$(appServicePlanName)${{parameters.profile}}"
+            serviceName = "$(deploymentName)${{parameters.profile}}"
+            functionAppName = "$(deploymentName)${{parameters.profile}}-functions"
             additionalDicomServerConfigProperties = $additionalProperties
             sqlAdminPassword = "$(-join((((33,35,37,38,42,43,45,46,95) + (48..57) + (65..90) + (97..122) | Get-Random -Count 20) + ((33,35,37,38,42,43,45,46,95) | Get-Random -Count 1) + ((48..57) | Get-Random -Count 1) + ((65..90) | Get-Random -Count 1) + ((97..122) | Get-Random -Count 1) | Get-Random -Count 24) | % {[char]$_}))"
             securityAuthenticationAuthority = "https://login.microsoftonline.com/$(tenant-id)"
-            securityAuthenticationAudience = "$(testEnvironmentUrl)"
+            securityAuthenticationAudience = "https://$(deploymentName)${{parameters.profile}}.azurewebsites.net/"
             deployPackage = $false
         }
 
-        New-AzResourceGroupDeployment -Name "$(deploymentName)" -ResourceGroupName "$(resourceGroupName)" -TemplateFile $deployPath/default-azuredeploy.json -TemplateParameterObject $templateParameters -Verbose
+        New-AzResourceGroupDeployment -Name "$(deploymentName)${{parameters.profile}}" -ResourceGroupName "$(resourceGroupName)${{parameters.profile}}" -TemplateFile $deployPath/default-azuredeploy.json -TemplateParameterObject $templateParameters -Verbose
 
-        Set-AzKeyVaultAccessPolicy -VaultName "$(deploymentName)" -ObjectId $(azureServiceConnectionOid) -PermissionsToSecrets list,get
+        Set-AzKeyVaultAccessPolicy -VaultName "$(deploymentName)${{parameters.profile}}" -ObjectId $(azureServiceConnectionOid) -PermissionsToSecrets list,get
 
   - task: DownloadBuildArtifacts@0
     inputs:
@@ -59,7 +64,7 @@ jobs:
       connectionType: 'AzureRM'
       azureSubscription: $(azureSubscriptionName)
       webAppKind: 'webApp'
-      webAppName: '$(deploymentName)'
+      webAppName: '$(deploymentName)${{parameters.profile}}'
       package: '$(System.ArtifactsDirectory)/deploy/Microsoft.Health.Dicom.Web.zip'
       takeAppOfflineFlag: true
 
@@ -69,6 +74,6 @@ jobs:
       connectionType: 'AzureRM'
       azureSubscription: $(azureSubscriptionName)
       webAppKind: 'functionApp'
-      webAppName: '$(deploymentName)-functions'
+      webAppName: '$(deploymentName)${{parameters.profile}}-functions'
       package: '$(System.ArtifactsDirectory)/deploy/Microsoft.Health.Dicom.Functions.zip'
       takeAppOfflineFlag: true
